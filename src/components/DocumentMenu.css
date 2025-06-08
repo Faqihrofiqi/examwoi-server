@@ -1,0 +1,84 @@
+/* DocumentMenu.css */
+.document-menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Untuk memusatkan konten jika tingginya penuh */
+  padding: 20px;
+  background-color: #f0f0f0; /* Warna latar abu-abu muda */
+  font-family: Arial, sans-serif;
+  min-height: 80vh; /* Minimal tinggi agar konten bisa di tengah */
+  box-sizing: border-box;
+}
+
+.form-fields {
+  width: 100%;
+  max-width: 350px; /* Lebar maksimum form */
+  margin-bottom: 20px;
+}
+
+.field-group {
+  margin-bottom: 15px;
+}
+
+.field-group input[type="text"] {
+  width: 100%; /* Input mengambil lebar penuh dari .field-group */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Padding dan border termasuk dalam width/height */
+  font-size: 16px;
+}
+
+.field-group input[type="text"]:read-only {
+  background-color: #e9ecef; /* Warna latar untuk read-only */
+  cursor: default;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column; /* Tombol tersusun vertikal */
+  align-items: center; /* Tombol rata tengah */
+  width: 100%;
+  max-width: 350px; /* Sesuaikan dengan lebar form */
+}
+
+.btn {
+  width: 100%; /* Tombol mengambil lebar penuh */
+  padding: 10px 15px;
+  margin-bottom: 10px; /* Jarak antar tombol */
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn:last-child {
+  margin-bottom: 0; /* Hilangkan margin bawah untuk tombol terakhir */
+}
+
+.btn-edit {
+  background-color: #003366; /* Biru tua */
+}
+
+.btn-delete {
+  background-color: #003366; /* Biru tua */
+}
+
+.btn-save {
+  background-color: #003366; /* Biru tua */
+}
+
+.btn-save:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.menu-title {
+  margin-top: 40px; /* Jarak dari tombol ke judul */
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+}

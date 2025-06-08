@@ -1,0 +1,375 @@
+/* DataSoalPage.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* --- Gaya Umum Halaman --- */
+.data-soal-page {
+  padding: 25px;
+  background-color: var(--page-bg);
+  min-height: 100vh; /* Memastikan halaman mengambil tinggi penuh */
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.data-soal-page .page-title {
+  font-size: 2.5em; /* Sedikit lebih kecil */
+  font-weight: 700;
+  color: var(--page-title-color);
+  text-align: center;
+  margin-top: 0; /* Hapus margin atas jika padding sudah cukup */
+  margin-bottom: 35px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.soal-content-layout {
+  display: flex;
+  gap: 25px; /* Jarak antara sidebar dan konten tabel */
+  width: 100%;
+  max-width: 1300px; /* Lebar maksimum konten */
+  margin: 0 auto; /* Pusatkan layout */
+  align-items: flex-start; /* Konten atas sejajar */
+}
+
+/* --- Kategori Soal Sidebar (Kiri) --- */
+.categories-sidebar-card {
+  flex: 0 0 260px; /* Lebar tetap untuk sidebar, tidak tumbuh, tidak menyusut */
+  background-color: var(--card-light-bg);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  padding: 20px;
+  box-sizing: border-box;
+  align-self: stretch; /* Agar tinggi sidebar sama dengan konten tabel jika memungkinkan */
+}
+
+.category-header-title {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column; /* Default: vertikal */
+  gap: 10px;
+}
+
+.category-item-button {
+  width: 100%;
+  padding: 11px 15px;
+  background-color: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  text-align: left;
+  font-size: 0.95em;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.category-item-button:hover {
+  background-color: var(--category-btn-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateX(3px); /* Efek geser halus */
+}
+
+.category-item-button.active {
+  background-color: var(--color-primary);
+  color: var(--text-light);
+  border-color: var(--color-primary);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+.category-item-button.active:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateX(0);
+}
+
+.add-category-button {
+  width: 100%;
+  padding: 11px 15px;
+  margin-top: 15px;
+  background-color: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.95em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-category-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.add-category-button .material-icons {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+/* --- Bagian Tabel Data Soal (Kanan) --- */
+.soal-table-section {
+  flex-grow: 1; /* Mengambil sisa ruang */
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Jarak antara judul kategori aktif dan tabel */
+}
+
+.active-category-display {
+  background-color: var(--card-light-bg);
+  border-radius: 10px;
+  padding: 16px 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.active-category-title {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.soal-table-card {
+  background-color: var(--card-light-bg);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  overflow: hidden; /* Penting untuk border-radius pada tabel */
+}
+
+/* Tata Letak Grid untuk Header dan Baris Tabel */
+.table-header-row-soal,
+.table-row-soal {
+  display: grid;
+  /* No(1), ID(2), Q(3), A(4), B(5), C(6), D(7), Aksi(8) */
+  grid-template-columns: 60px 90px minmax(250px, 3fr) repeat(4, minmax(80px, 1.2fr)) 100px; /* Penyesuaian untuk kolom jawaban dan aksi */
+  align-items: stretch; /* Selalu sama tinggi */
+}
+
+.table-header-row-soal {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  border-bottom: 1px solid var(--table-header-border); /* Garis bawah header yang lebih jelas */
+}
+
+.table-header-cell-soal,
+.table-cell-soal {
+  padding: 14px 12px; /* Padding yang konsisten */
+  display: flex;
+  align-items: center; /* Vertikal tengah */
+  border-right: 1px solid var(--table-header-border); /* Garis antar sel header */
+  overflow: hidden; /* Cegah konten meluber */
+  text-overflow: ellipsis; /* Tampilkan elipsis jika teks terlalu panjang */
+}
+.table-header-cell-soal { /* Style spesifik header */
+  font-size: 0.9em;
+  white-space: nowrap; /* Header biasanya tidak wrap */
+}
+.table-cell-soal { /* Style spesifik sel data */
+  font-size: 0.88em;
+  color: var(--text-dark);
+  border-right-color: var(--border-light); /* Garis antar sel data lebih soft */
+  line-height: 1.5;
+}
+
+/* Hilangkan border kanan pada sel terakhir di setiap baris */
+.table-header-cell-soal:last-child,
+.table-cell-soal:last-child {
+  border-right: none;
+}
+
+/* Alignment untuk kolom spesifik */
+.th-col-1, .td-col-1, /* No soal */
+.th-col-2, .td-col-2, /* id soal */
+.th-col-8, .td-col-8  /* Aksi */ {
+  justify-content: center;
+  text-align: center;
+}
+.question-cell { /* Sel pertanyaan */
+  white-space: normal; /* Izinkan teks pertanyaan untuk wrap */
+}
+
+.table-body-soal .table-row-soal {
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s ease;
+}
+.table-body-soal .table-row-soal:last-child {
+  border-bottom: none;
+}
+.table-body-soal .table-row-soal:hover {
+  background-color: var(--table-row-hover);
+}
+
+/* Tombol Aksi */
+.action-cell {
+  gap: 8px;
+}
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+.action-button .material-icons {
+  font-size: 20px;
+}
+.edit-button .material-icons { color: var(--color-edit); }
+.edit-button:hover { background-color: var(--action-icon-hover-bg-edit); }
+.delete-button .material-icons { color: var(--color-delete); }
+.delete-button:hover { background-color: var(--action-icon-hover-bg-delete); }
+
+.no-data-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 20px;
+}
+.no-data-placeholder p {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.1em;
+}
+
+/* --- Responsive Design --- */
+/* Tablet dan Layar Lebih Kecil */
+@media (max-width: 1200px) {
+  .soal-content-layout {
+    gap: 20px;
+  }
+  .categories-sidebar-card {
+    flex-basis: 220px; /* Sedikit lebih kecil */
+  }
+  .table-header-row-soal,
+  .table-row-soal {
+    /* No(1), ID(2), Q(3), A(4), B(5), (C(6), D(7) disembunyikan), Aksi(8) */
+    grid-template-columns: 50px 80px minmax(200px, 2.5fr) repeat(2, minmax(70px, 1fr)) 80px;
+  }
+  .th-col-6, .td-col-6, /* Jawaban C */
+  .th-col-7, .td-col-7  /* Jawaban D */ {
+    display: none;
+  }
+   /* Pastikan border kanan diatur untuk sel terakhir yang terlihat sebelum Aksi */
+  .table-header-cell-soal.th-col-5,
+  .table-cell-soal.td-col-5 {
+      border-right: none;
+  }
+}
+
+@media (max-width: 992px) {
+  .data-soal-page .page-title {
+    font-size: 2.2em;
+    margin-bottom: 30px;
+  }
+  .soal-content-layout {
+    flex-direction: column; /* Layout utama menjadi vertikal */
+    align-items: center; /* Pusatkan sidebar dan tabel */
+  }
+  .categories-sidebar-card {
+    width: 100%;
+    max-width: 700px; /* Batasi lebar sidebar */
+    align-self: center;
+    flex-basis: auto; /* Reset flex-basis */
+  }
+  .category-list {
+    flex-direction: row; /* Kategori menjadi horizontal */
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .category-item-button {
+    width: auto; /* Tombol kategori tidak lagi full width */
+    flex-grow: 1; /* Izinkan tumbuh */
+    min-width: 130px; /* Lebar minimum tombol */
+    text-align: center;
+  }
+  .add-category-button {
+    width: auto;
+    flex-grow: 1;
+    min-width: 130px;
+    margin-top: 0; /* Reset margin atas karena sekarang horizontal */
+  }
+  .soal-table-section {
+    width: 100%;
+    max-width: 700px; /* Batasi lebar tabel juga */
+  }
+  .table-header-row-soal,
+  .table-row-soal {
+    /* No(1), Q(3), (A(4) disembunyikan), Aksi(8) */
+    /* ID(2), B(5), C(6), D(7) disembunyikan */
+    grid-template-columns: 50px minmax(150px, 3fr) 80px;
+  }
+  .th-col-2, .td-col-2, /* ID Soal */
+  .th-col-4, .td-col-4, /* Jawaban A */
+  .th-col-5, .td-col-5, /* Jawaban B */
+  .th-col-6, .td-col-6, /* Jawaban C */
+  .th-col-7, .td-col-7  /* Jawaban D */ {
+    display: none;
+  }
+  /* Pastikan border kanan diatur untuk sel terakhir yang terlihat sebelum Aksi */
+  .table-header-cell-soal.th-col-3, /* Pertanyaan */
+  .table-cell-soal.td-col-3 {
+      border-right: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .data-soal-page {
+    padding: 15px;
+  }
+  .data-soal-page .page-title {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+  }
+  .categories-sidebar-card,
+  .soal-table-section {
+    max-width: 100%; /* Gunakan lebar penuh */
+  }
+  .category-item-button, .add-category-button {
+    min-width: 110px; /* Tombol kategori lebih kecil */
+    font-size: 0.85em;
+  }
+  .active-category-title {
+    font-size: 1.3em;
+  }
+  .table-header-row-soal,
+  .table-row-soal {
+    /* Hanya Pertanyaan (3) dan Aksi (8) */
+    grid-template-columns: 1fr 70px; /* Pertanyaan mengambil sisa ruang */
+    font-size: 0.9em; /* Teks tabel lebih kecil */
+  }
+  .th-col-1, .td-col-1, /* No Soal */
+  .th-col-2, .td-col-2, /* ID Soal */
+  .th-col-4, .td-col-4, /* Jawaban A */
+  .th-col-5, .td-col-5, /* Jawaban B */
+  .th-col-6, .td-col-6, /* Jawaban C */
+  .th-col-7, .td-col-7  /* Jawaban D */ {
+    display: none;
+  }
+  /* Pastikan border kanan diatur untuk sel terakhir yang terlihat sebelum Aksi */
+  .table-header-cell-soal.th-col-3, /* Pertanyaan */
+  .table-cell-soal.td-col-3 {
+      border-right: none;
+  }
+  .table-header-cell-soal, .table-cell-soal {
+      padding: 10px 8px; /* Padding lebih kecil */
+  }
+  .action-button .material-icons {
+    font-size: 18px; /* Ikon aksi lebih kecil */
+  }
+}

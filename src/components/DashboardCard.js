@@ -1,5 +1,6 @@
 // src/components/DashboardCard.js
 import React from 'react';
+import './DashboardCard.css'; // Pastikan untuk mengimpor CSS yang sesuai
 
 // Tambahkan onClick dan style sebagai prop
 const DashboardCard = ({ title, content, type, footer, span, isSimpleCard = false, onClick, style }) => {

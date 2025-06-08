@@ -4,9 +4,12 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import DashboardCard from './components/DashboardCard'; // Masih diimpor karena dipakai di dalam HomePage.js
-import HomePage from './pages/HomePage'; // Impor komponen halaman home baru
 import DataUserPage from './pages/DataUserPage'; // Impor halaman data user
+import DataSoalPage from './pages/DataSoalPage'; // Impor halaman data soal
+import DokumenMenu from './components/DocumentMenu'; // Impor komponen DokumenMenu
 import './App.css';
+import AdvertiserMenu from './components/AdvertiserMenu';
+import ComingSoonPage from './pages/ComingSoonPage';
 
 // Komponen Card yang sedikit dimodifikasi untuk bisa di-klik dan navigasi
 const ClickableDashboardCard = ({ title, type, isSimpleCard, path }) => {
@@ -39,7 +42,7 @@ function App() {
     { title: 'KODE Refferal', category: 'data-yellow', icon: 'vpn_key', path: '/kode-refferal' },
     { title: 'Admin', category: 'data-yellow', icon: 'security', path: '/admin' },
     { title: 'Analis', category: 'data-blue', icon: 'bar_chart', path: '/analis' },
-    { title: 'Edvertiser', category: 'data-blue', icon: 'campaign', path: '/edvertiser' },
+    { title: 'Advetiser', category: 'data-blue', icon: 'campaign', path: '/advertiser' },
   ];
 
   return (
@@ -69,9 +72,10 @@ function App() {
                 </div>
               } />
               <Route path="/data-user" element={<DataUserPage />} /> {/* Rute untuk Data User */}
-              {/* Anda bisa menambahkan rute lain di sini nanti */}
-              <Route path="/data-soal" element={<div>Halaman Data Soal (belum dibuat)</div>} />
-              <Route path="/affiliate" element={<div>Halaman Affiliate (belum dibuat)</div>} />
+              <Route path="/data-soal" element={<DataSoalPage />} /> {/* Rute untuk Data Soal */}
+              <Route path="/dokumen-apk" element={<DokumenMenu />} />
+              <Route path="/advertiser" element={<AdvertiserMenu />} />
+              <Route path="/affiliate" element={<ComingSoonPage />} />
               {/* ... dan seterusnya untuk path lainnya ... */}
             </Routes>
           </div>

@@ -1,5 +1,6 @@
 // src/pages/DataUserPage.js
 import React from 'react';
+import './DataUserPage.css'; // Pastikan untuk mengimpor CSS yang sesuai
 
 const DataUserPage = () => {
   return (

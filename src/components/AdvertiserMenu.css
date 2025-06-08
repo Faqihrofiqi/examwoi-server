@@ -1,0 +1,163 @@
+/* AdvertiserMenu.css */
+.advertiser-menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+  min-height: 90vh;
+}
+
+.top-section-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 900px;
+  gap: 20px;
+}
+
+.main-content-area {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.action-buttons-advertiser {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.content-section {
+  border: 1px solid #666;
+  padding: 20px;
+  padding-top: 25px;
+  position: relative;
+  background-color: #f0f0f0; /* Samakan dengan background utama */
+}
+
+.content-legend {
+  font-size: 14px;
+  font-weight: bold;
+  background-color: inherit; /* Warisi dari parent (.content-section) */
+  padding: 0 8px;
+  position: absolute;
+  top: -10px;
+}
+
+.header-legend {
+  left: 10px;
+}
+
+.footer-legend {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Styling untuk area edit */
+.edit-fields label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.edit-fields textarea,
+.edit-fields input[type="text"] {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.edit-fields textarea {
+  resize: vertical;
+}
+
+/* Styling untuk area tampilan konten (banner) */
+.content-display-area {
+  min-height: 120px; /* Sesuaikan tinggi banner */
+  width: 100%;
+  background-size: cover; /* Gambar mengisi area, mungkin terpotong */
+  /* background-size: contain; /* Gambar utuh, mungkin ada spasi */
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative; /* Untuk positioning overlay text */
+  display: flex;
+  justify-content: center; /* Pusatkan teks overlay secara horizontal */
+  align-items: center; /* Pusatkan teks overlay secara vertikal */
+  border: 1px solid #ddd; /* Optional: border untuk area */
+  overflow: hidden;
+  padding: 10px; /* Padding internal agar teks tidak menempel di tepi */
+  box-sizing: border-box;
+}
+
+.overlay-text {
+  padding: 8px 15px;
+  background-color: rgba(0, 0, 0, 0.5); /* Latar semi-transparan untuk teks */
+  color: white;
+  text-align: center;
+  border-radius: 4px;
+  font-size: 16px; /* Ukuran teks default untuk overlay */
+  max-width: 95%; /* Agar teks tidak terlalu lebar */
+  word-break: break-word;
+}
+
+.overlay-text.text-only {
+  background-color: transparent; /* Tidak ada latar transparan jika hanya teks */
+  color: #333; /* Warna teks standar jika hanya teks */
+  font-size: 14px; /* Ukuran teks default jika tanpa background gambar */
+}
+
+.content-placeholder {
+  color: #777;
+  font-style: italic;
+  text-align: center;
+  font-size: 14px;
+}
+
+.sr-only { /* Untuk teks aksesibilitas yang tidak terlihat */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.btn-advertiser {
+  width: 100%;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #003366;
+  text-align: center;
+}
+
+.btn-advertiser:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.advertiser-menu-title {
+  margin-top: 40px;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+  width: 100%;
+}

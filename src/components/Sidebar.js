@@ -1,6 +1,7 @@
 
 // src/components/Sidebar.js
 import React from 'react';
+import './Sidebar.css'; // Pastikan untuk mengimpor CSS yang sesuai
 
 const Sidebar = () => {
   return (

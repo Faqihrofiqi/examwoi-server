@@ -1,0 +1,123 @@
+/* ComingSoonPage.css - Dengan Ikon Panah Kembali */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+.coming-soon-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+  font-family: 'Poppins', Arial, sans-serif;
+  box-sizing: border-box;
+  position: relative; /* Penting untuk positioning absolut tombol panah */
+}
+
+/* Tombol Panah Kembali */
+.back-arrow-button {
+  position: absolute;
+  top: 25px; /* Jarak dari atas */
+  left: 25px; /* Jarak dari kiri */
+  background: none; /* Hilangkan latar default tombol */
+  border: none; /* Hilangkan border default tombol */
+  padding: 8px; /* Area klik di sekitar ikon */
+  cursor: pointer;
+  border-radius: 50%; /* Membuat area hover/klik menjadi lingkaran */
+  transition: background-color 0.2s ease;
+  z-index: 100; /* Pastikan di atas elemen lain jika ada tumpang tindih */
+  line-height: 0; /* Untuk alignment SVG yang lebih baik di dalam tombol */
+}
+
+.back-arrow-button:hover {
+  background-color: rgba(0, 0, 0, 0.08); /* Efek hover yang halus */
+}
+
+.back-arrow-svg {
+  width: 28px; /* Ukuran ikon panah */
+  height: 28px;
+  fill: #003366; /* Warna biru tua "senada" */
+  display: block; /* Untuk menghilangkan spasi ekstra di bawah SVG */
+}
+
+/* Kontainer untuk konten utama */
+.coming-soon-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  /* Beri sedikit padding atas tambahan jika khawatir konten terlalu dekat dengan panah,
+     meskipun dengan positioning absolut dan konten yang terpusat, biasanya tidak masalah.
+     Contoh: padding-top: 70px; */
+  text-align: center;
+  color: #333333;
+  box-sizing: border-box;
+}
+
+.coming-soon-content {
+  max-width: 600px;
+  width: 100%;
+}
+
+.icon-area {
+  margin-bottom: 25px;
+}
+
+.coming-soon-icon {
+  width: 80px;
+  height: 80px;
+  fill: #003366;
+  animation: subtle-spin 12s linear infinite;
+}
+
+@keyframes subtle-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.coming-soon-content h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 15px;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px; /* Menghapus area navigasi tombol teks, jadi margin ini mungkin perlu disesuaikan jika tata letak terasa berbeda */
+  color: #555555;
+}
+
+.coming-soon-footer {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #777777;
+  background-color: #e9e9e9;
+  border-top: 1px solid #dddddd;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* Responsiveness */
+@media (max-width: 600px) {
+  .back-arrow-button {
+    top: 15px;
+    left: 15px;
+  }
+  .back-arrow-svg {
+    width: 24px;
+    height: 24px;
+  }
+  .coming-soon-content h1 {
+    font-size: 2rem;
+  }
+  .tagline {
+    font-size: 1rem;
+  }
+  .coming-soon-footer {
+    padding: 15px;
+    font-size: 0.85rem;
+  }
+}
