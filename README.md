@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+# Examwoi Hybrid LMS (Sistem Simulasi Ujian Hybrid)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Selamat datang di proyek **Examwoi Hybrid LMS**! Repositori ini mencakup backend API berbasis **Express.js** dan frontend dashboard admin berbasis **React.js**, untuk mendukung sistem simulasi ujian hybrid (online & offline) bagi institusi pendidikan.
 
-## Available Scripts
+## 📋 Daftar Isi
+- [Tentang Proyek](#tentang-proyek)
+- [Fitur Utama](#fitur-utama)
+- [Persyaratan Sistem](#persyaratan-sistem)
+- [Setup Backend (examwoi-api)](#setup-backend-examwoi-api)
+- [Setup Frontend (examwoi-frontend)](#setup-frontend-examwoi-frontend)
+- [Integrasi dan Pengujian](#integrasi-dan-pengujian)
+- [Testing API (Opsional)](#testing-api-opsional)
+- [Panduan Login Admin](#panduan-login-admin)
+- [Kontak](#kontak)
 
-In the project directory, you can run:
+## 📚 Tentang Proyek
+**Examwoi** adalah sistem **LMS hybrid** yang dirancang untuk membantu siswa mempersiapkan diri menghadapi ujian masuk perguruan tinggi. Aplikasi ini mendukung skenario ujian online maupun offline dan dapat dikustomisasi (white-label) oleh institusi.
 
-### `npm start`
+## 🚀 Fitur Utama
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Backend (Express.js, PostgreSQL, Prisma)
+- Autentikasi lengkap (Register, Login, OTP, Reset Password, JWT)
+- Manajemen user dan role (Admin, Guru, Siswa)
+- CRUD data fakultas dan soal ujian
+- Dukungan soal teks, gambar, audio (dengan Base64)
+- Draft → Publish → Archive lifecycle soal
+- Sinkronisasi progres ujian siswa (untuk mobile app)
+- Konfigurasi dinamis (privacy policy, nama app, banner, background)
+- Keamanan: Password hashing, rate limit OTP, validasi ketat
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Frontend Admin (React.js, Bootstrap 5, Material Dashboard)
+- Dashboard admin: Kelola user, soal, dan konfigurasi aplikasi
+- Autentikasi lengkap (login, register, OTP, reset password)
+- Input soal via raw text atau formulir (support batch & media upload)
+- Manajemen kategori/fakultas (inline form)
+- Preview soal dan status (Draft, Published, Archived)
+- Dynamic navbar (nama app & sapaan admin)
 
-### `npm test`
+## 💻 Persyaratan Sistem
+Pastikan sistem Anda memiliki:
+- Node.js (v18+ disarankan Node.js 20)
+- npm
+- PostgreSQL
+- Akun SMTP2GO (untuk OTP email)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🔧 Setup Backend (api)
+1. Jalankan `npm install`
+2. Buat file `.env` berdasarkan `.env.example`
+3. Migrasikan dan seed database:
+   - `npx prisma migrate dev --name init_database_schema`
+   - `npx prisma generate`
+   - `npm run prisma:seed`
+4. Jalankan server dengan `npm run dev`
 
-### `npm run build`
+## 🎨 Setup Frontend (examwoi-frontend)
+1. Jalankan `npm install`
+2. Buat file `.env` berdasarkan `.env.example`
+3. Jalankan aplikasi React dengan `npm start`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🔄 Integrasi dan Pengujian
+1. Jalankan backend (`npm run dev`)
+2. Jalankan frontend (`npm start`)
+3. Akses dashboard di: [http://localhost:3001/admin/login](http://localhost:3001/admin/login)
+4. Login sebagai admin dan uji:
+   - Navigasi halaman soal dan user
+   - Tambah/edit soal (media, batch, raw)
+   - Kelola user dan kategori
+   - Edit konten dokumen & upload banner/background
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🧪 Testing API (Opsional)
+- Gunakan ekstensi VS Code **REST Client**
+- Buat file `.http` atau `.rest` untuk menguji endpoint secara langsung
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🔐 Panduan Login Admin
+Gunakan akun default hasil seeding:
 
-### `npm run eject`
+| Role     | Email                 | Password   |
+|----------|-----------------------|------------|
+| Admin    | admin@examwoi.com     | admin123   |
+| Teacher  | teacher@examwoi.com   | teacher123 |
+| Student  | student@examwoi.com   | student123 |
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📬 Kontak
+Jika ada pertanyaan atau butuh bantuan, silakan hubungi pengelola proyek ini melalui email atau issue tracker pada repositori.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+> Dibuat dengan ❤️ oleh tim pengembang Examwoi.
+© 2025 | 21sa1077@mhs.amikompruwokerto.ac.id | bagusprz10
