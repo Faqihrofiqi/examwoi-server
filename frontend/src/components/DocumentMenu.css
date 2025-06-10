@@ -1,0 +1,354 @@
+/* Variabel CSS untuk konsistensi */
+:root {
+  --primary-color: #9c27b0;
+  /* Warna utama, sesuai dengan card-header-primary */
+  --primary-dark-color: #7b1fa2;
+  --text-color: #333;
+  --border-color: #ddd;
+  --hover-bg-color: #f5f5f5;
+  --success-color: #4CAF50;
+  --danger-color: #f44336;
+  --warning-color: #ff9800;
+  --info-color: #2196F3;
+  --spacing-unit: 16px;
+}
+
+/* Gaya dasar untuk container utama */
+.document-menu-container {
+  max-width: 900px;
+  margin: var(--spacing-unit) auto;
+  padding: 0;
+  /* Card padding sudah ada */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  /* Memastikan konten tidak keluar dari border-radius */
+  background-color: #fff;
+}
+
+/* Header kartu */
+.card-header-primary {
+  background: linear-gradient(60deg, #ab47bc, var(--primary-color));
+  color: white;
+  padding: var(--spacing-unit) calc(var(--spacing-unit) * 1.5);
+  margin: 0;
+  border-radius: 8px 8px 0 0;
+  text-align: center;
+  box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(156, 39, 176, 0.4);
+}
+
+.card-header-primary h4 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
+.card-header-primary p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Body kartu */
+.card-body {
+  padding: calc(var(--spacing-unit) * 1.5);
+}
+
+/* Gaya pesan alert */
+.alert {
+  padding: var(--spacing-unit);
+  margin-bottom: var(--spacing-unit);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: var(--success-color);
+  border-color: #c3e6cb;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: var(--danger-color);
+  border-color: #f5c6cb;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: var(--info-color);
+  border-color: #bee5eb;
+}
+
+.alert .close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0;
+}
+
+.alert .close:hover {
+  opacity: 1;
+}
+
+/* Tata letak untuk group field (label + input/textarea) */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-unit);
+  /* Spasi antar field group */
+}
+
+.field-group {
+  margin-bottom: calc(var(--spacing-unit) / 2);
+  /* Spasi antar grup form */
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: calc(var(--spacing-unit) / 4);
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+/* Gaya input dan textarea */
+.form-control {
+  width: 100%;
+  padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  color: var(--text-color);
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(156, 39, 176, 0.25);
+  outline: none;
+}
+
+.form-control[readOnly] {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+textarea.form-control {
+  resize: vertical;
+  /* Izinkan textarea di-resize secara vertikal */
+  min-height: 100px;
+  /* Tinggi minimum untuk textarea */
+}
+
+/* Gaya untuk input file */
+.form-control-file {
+  display: block;
+  width: 100%;
+  padding: calc(var(--spacing-unit) / 2) 0;
+  /* Padding hanya vertikal */
+  margin-top: calc(var(--spacing-unit) / 4);
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+/* Gaya gambar thumbnail */
+.img-thumbnail {
+  display: block;
+  /* Memastikan gambar mengambil baris baru */
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px;
+  background-color: #fff;
+  max-width: 100%;
+  /* Agar responsif */
+  height: auto;
+  object-fit: contain;
+  /* Memastikan gambar tidak terdistorsi */
+}
+
+/* Teks ukuran gambar */
+.text-muted {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+/* Tombol-tombol */
+.btn {
+  display: inline-flex;
+  /* Agar ikon dan teks sejajar */
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-decoration: none;
+}
+
+.btn i.material-icons {
+  margin-right: 8px;
+  /* Spasi antara ikon dan teks */
+  font-size: 1.2rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark-color);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+}
+
+.btn-warning {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.btn-warning:hover {
+  background-color: #e68a00;
+  transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+  background-color: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.btn-outline-warning {
+  background-color: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+}
+
+.btn-outline-warning:hover {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+
+/* Penempatan tombol aksi */
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-unit);
+  /* Spasi antar tombol */
+  flex-wrap: wrap;
+  /* Agar tombol wrap ke baris baru jika terlalu banyak */
+}
+
+/* Gaya untuk loading dan error state */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.error-state {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+/* --- Media Queries untuk Responsivitas --- */
+
+/* Untuk layar yang lebih kecil dari 768px (tablet dan mobile) */
+@media (max-width: 768px) {
+  .document-menu-container {
+    margin: var(--spacing-unit) 10px;
+    /* Margin lebih kecil di perangkat mobile */
+    border-radius: 0;
+    /* Hilangkan border-radius di mobile agar full width */
+  }
+
+  .card-header-primary {
+    padding: var(--spacing-unit);
+    border-radius: 0;
+    /* Hilangkan border-radius */
+  }
+
+  .card-header-primary h4 {
+    font-size: 1.5rem;
+  }
+
+  .card-header-primary p {
+    font-size: 0.9rem;
+  }
+
+  .card-body {
+    padding: var(--spacing-unit);
+    /* Padding sedikit lebih kecil */
+  }
+
+  .form-control {
+    font-size: 0.95rem;
+    /* Ukuran font sedikit lebih kecil pada input */
+  }
+
+  .btn {
+    width: 100%;
+    /* Tombol memenuhi lebar di layar kecil */
+    margin-bottom: calc(var(--spacing-unit) / 2);
+    /* Spasi antar tombol vertikal */
+    padding: 12px 15px;
+    /* Padding sedikit lebih besar agar mudah disentuh */
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    /* Tombol menjadi satu kolom */
+    align-items: stretch;
+    /* Tombol memenuhi lebar */
+    gap: calc(var(--spacing-unit) / 2);
+  }
+
+  .action-buttons .btn.ml-2 {
+    margin-left: 0 !important;
+    /* Hapus margin kiri untuk tombol cancel */
+  }
+}
+
+/* Untuk layar yang lebih kecil dari 576px (mobile) */
+@media (max-width: 576px) {
+  .card-header-primary h4 {
+    font-size: 1.3rem;
+  }
+
+  .card-header-primary p {
+    font-size: 0.85rem;
+  }
+
+  .img-thumbnail {
+    max-width: 100%;
+    /* Pastikan gambar thumbnail tidak melebihi lebar kontainer */
+  }
+}

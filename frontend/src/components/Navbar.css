@@ -1,0 +1,229 @@
+/* src/components/Navbar.css */
+
+/* --- Navbar Styling --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--navbar-bg);
+  padding: 15px 30px;
+  border-radius: 6px;
+  margin-bottom: 30px;
+  box-shadow: var(--navbar-shadow);
+  color: var(--navbar-text);
+  z-index: 100;
+  /* Pastikan navbar di atas konten lain */
+}
+
+.navbar-left h3 {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 500;
+  color: var(--navbar-text);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+/* --- Search Box Styling --- */
+.navbar-right .search-box {
+  position: relative;
+  margin-right: 20px;
+  /* Hapus display:flex dan align-items:center, itu sudah ditangani input-group */
+  /* border-bottom dan transition akan dipindah ke input-group */
+}
+
+.navbar-right .search-box .input-group {
+  border-bottom: 1px solid #ddd;
+  /* Pindahkan styling border ke input-group */
+  transition: border-color 0.3s ease;
+  border-radius: 0;
+  /* Pastikan tidak ada border-radius yang mengganggu */
+  align-items: center;
+  /* Sejajarkan input dan ikon */
+  padding-left: 5px;
+  /* Padding untuk ikon */
+}
+
+.navbar-right .search-box .input-group:focus-within {
+  border-color: var(--color-primary);
+}
+
+.navbar-right .search-box .search-input {
+  border: none;
+  /* Hapus border input individual */
+  padding: 8px 10px;
+  font-size: 1em;
+  outline: none;
+  color: var(--navbar-text);
+  width: 150px;
+  transition: width 0.3s ease;
+  background-color: transparent;
+  /* Pastikan background transparan */
+}
+
+.navbar-right .search-box .search-input::placeholder {
+  color: #999;
+}
+
+.navbar-right .search-box .search-input:focus {
+  width: 250px;
+}
+
+.navbar-right .search-box .input-group-append {
+  margin-left: -1px;
+  /* Overlap sedikit untuk Bootstrap look */
+}
+
+.navbar-right .search-box .input-group-append .search-icon-container {
+  background-color: transparent;
+  /* Background ikon transparan */
+  border: none;
+  /* Tanpa border */
+  padding: 0 5px;
+  /* Padding untuk ikon */
+  cursor: pointer;
+  display: flex;
+  /* Untuk mensejajarkan ikon */
+  align-items: center;
+  color: #999;
+}
+
+.navbar-right .search-box .search-icon {
+  font-size: 20px;
+  color: inherit;
+  /* Warisan dari search-icon-container */
+}
+
+/* --- General Icons and Logout Button --- */
+.navbar-right .material-icons {
+  margin-left: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s ease;
+}
+
+.navbar-right .material-icons:hover {
+  color: var(--color-primary);
+}
+
+.logout-button {
+  margin-left: 15px;
+  padding: 5px 10px;
+  font-size: 0.8em;
+  border-radius: 4px;
+  background-color: transparent !important;
+  color: var(--navbar-text) !important;
+  border: 1px solid var(--navbar-text);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logout-button:hover {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  background-color: rgba(52, 152, 219, 0.1) !important;
+}
+
+.logout-button .material-icons {
+  font-size: 18px;
+  margin-left: 0;
+  /* Override default margin-left */
+  color: inherit;
+  /* Ikuti warna teks tombol */
+}
+
+/* --- Responsive Design untuk Navbar --- */
+@media (max-width: 992px) {
+  .main-content {
+    margin-left: 0;
+    /* Sidebar mungkin hilang atau collapsible */
+  }
+
+  .navbar {
+    padding: 10px 20px;
+  }
+
+  .navbar-left h3 {
+    font-size: 1.3em;
+  }
+
+  .navbar-right .material-icons {
+    margin-left: 15px;
+  }
+
+  .navbar-right .search-box .search-input {
+    width: 100px;
+  }
+
+  .navbar-right .search-box .search-input:focus {
+    width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+  }
+
+  .navbar-left,
+  .navbar-right {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+    justify-content: center;
+    /* Pusatkan elemen di mobile */
+  }
+
+  .navbar-right {
+    margin-top: 10px;
+    flex-wrap: wrap;
+    /* Izinkan ikon untuk wrap jika terlalu banyak */
+  }
+
+  .navbar-right .search-box {
+    margin-right: 0;
+    margin-bottom: 10px;
+    /* Tambah margin bawah untuk search box */
+  }
+
+  .navbar-right .material-icons,
+  .logout-button {
+    margin-left: 10px;
+    margin-right: 10px;
+    /* Tambah margin kanan juga untuk spacing */
+  }
+
+  .logout-button {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-right .search-box .search-input {
+    width: 120px;
+  }
+
+  .navbar-right .search-box .search-input:focus {
+    width: 150px;
+  }
+
+  .navbar-right .material-icons,
+  .logout-button {
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 20px;
+  }
+
+  .logout-button .material-icons {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,237 @@
+@accessToken1=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ0MDE1NWM3LWI5MTctNDZjOC1hMWJlLTUwNTQyNGYyZjcwYiIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc0OTQwOTE3NCwiZXhwIjoxNzQ5NDEyNzc0fQ.AKkFFkNf-Z9Jr0Ko8z6uylqMAGRMBRpXt_K-Y1pRbLc
+
+GET http://localhost:3000/v1/app-configs
+Authorization: Bearer {{accessToken1}}
+
+
+### AUTHENTICATION MODULE
+
+@baseUrl = http://localhost:3000/v1
+
+### 1. Register User (POST /v1/auth/register)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "cocotmu98@gmail.com",
+  "password": "password123",
+  "username": "Test User",
+  "phone": "0812345622290",
+  "dateOfBirth": "2000-01-01",
+  "kabupaten": "Purwokerto",
+  "profinsi": "Jawa Tengah"
+}
+
+### 2. Verify OTP (POST /v1/auth/verify) - Use OTP from email
+POST {{baseUrl}}/auth/verify
+Content-Type: application/json
+
+{
+  "email": "cocotmu98@gmail.com",
+  "otp": "202197" 
+}
+
+### 3. Login User (POST /v1/auth/login)
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1NGFhZWM0LTM3NDgtNDExMy1iNjgxLTQ3MDc2ZmFmZWE1ZSIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzQ5NDA1MDI2LCJleHAiOjE3NDk0MDg2MjZ9.oN6wdaeWVAapG8EPHgSqCvCn9pDd_qpmmWVXrKGW6DI
+@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1NGFhZWM0LTM3NDgtNDExMy1iNjgxLTQ3MDc2ZmFmZWE1ZSIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzQ5NDA1MDI2LCJleHAiOjE3NTE5OTcwMjZ9.t2-M-fLEox-hJstQSsYRy0BTgKRZGMvOLx_vTKGO30k
+@userRole =STUDENT
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "cocotmu98@gmail.com",
+  "password": "password123"
+}
+
+### Save Login Tokens
+# @set accessToken = {{res.body.accessToken}}
+# @set refreshToken = {{res.body.refreshToken}}
+# @set userRole = {{res.body.user.role}}
+
+### 4. Forgot Password (POST /v1/auth/forgot-password)
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "cocotmu98@gmail.com"
+}
+
+### 5. Reset Password (POST /v1/auth/reset-password) - Use OTP from email
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "cocotmu98@gmail.com",
+  "newPassword": "newpassword123",
+  "otp": "766323"
+}
+
+### 6. Refresh Token (POST /v1/auth/refresh-token)
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 7. Get Profile (GET /v1/auth/profile) - Requires Access Token
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{accessToken}}
+
+
+### 8. Admin Dashboard (GET /v1/auth/admin-dashboard) - Requires ADMIN Role
+GET {{baseUrl}}/auth/admin-dashboard
+Authorization: Bearer {{accessToken}}
+
+
+### FACULTY MANAGEMENT MODULE
+
+@facultyId =60b0b4d2-9508-4bd9-9499-e763440c6619
+
+### 1. Get All Faculties (GET /v1/faculties)
+GET {{baseUrl}}/faculties
+
+### 2. Create Faculty (POST /v1/faculties) - Requires ADMIN Role
+POST {{baseUrl}}/faculties
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Fakultas Desain Interaktif",
+  "description": "Fakultas untuk mendesain pengalaman digital.",
+  "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+}
+
+### Save Faculty ID
+# @set facultyId = {{res.body.data.id}}
+
+### 3. Get Faculty by ID (GET /v1/faculties/:id)
+GET {{baseUrl}}/faculties/{{facultyId}}
+
+### 4. Update Faculty (PUT /v1/faculties/:id) - Requires ADMIN Role
+PUT {{baseUrl}}/faculties/{{facultyId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "description": "Fakultas yang sangat keren dan inovatif."
+}
+
+### 5. Delete Faculty (DELETE /v1/faculties/:id) - Requires ADMIN Role
+DELETE {{baseUrl}}/faculties/{{facultyId}}
+Authorization: Bearer {{accessToken}}
+
+
+@
+### QUESTION MANAGEMENT MODULE
+
+@questionId =d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+@fkipFacultyId=4efa77d5-890c-496f-ac84-cdd5dde0adf1
+
+### 0. Get All Faculties (GET /v1/faculties) - For Previewing Faculty IDs
+GET {{baseUrl}}/faculties
+
+###
+GET {{baseUrl}}/questions
+
+### 1. Preview Question from Raw Text (POST /v1/questions/preview)
+POST {{baseUrl}}/questions/preview
+Content-Type: application/json
+
+{
+  "rawText": "# Apa hewan yang paling besar di darat?\n-- Gajah\n-- Badak\n-- Jerapah\n-- Kuda Nil\n@a"
+}
+
+### 2. Create Question (Draft) (POST /v1/questions) - Requires ADMIN/TEACHER Role
+POST {{baseUrl}}/questions
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "facultyId": "4efa77d5-890c-496f-ac84-cdd5dde0adf1",
+  "rawText": "# Apa ilmu yang mempelajari bintang-bintang?\n-- Biologi\n-- Geologi\n-- Astronomi\n-- Oseanografi\n@c",
+  "status": "DRAFT"
+}
+
+### Save Question ID
+# @set questionId = {{res.body.data.id}}
+
+### 3. Create Question (Published with Image) (POST /v1/questions) - Requires ADMIN/TEACHER Role
+POST {{baseUrl}}/questions
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "facultyId": "4efa77d5-890c-496f-ac84-cdd5dde0adf1",
+  "rawText": "# Lihat gambar, apa ini?\n[IMG:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==]\n-- Segitiga\n-- Kotak\n-- Lingkaran\n-- Bintang\n@b",
+  "status": "PUBLISHED"
+}
+
+
+### 4. Get All Questions (GET /v1/questions)
+GET {{baseUrl}}/questions
+
+### 5. Get Questions by Faculty & Status (GET /v1/questions?facultyId=&status=)
+GET {{baseUrl}}/questions?facultyId=4efa77d5-890c-496f-ac84-cdd5dde0adf1&status=PUBLISHED
+
+
+### 6. Get Question by ID (GET /v1/questions/:id)
+GET {{baseUrl}}/questions/{{questionId}}
+
+### 7. Update Question (PUT /v1/questions/:id) - Requires ADMIN/TEACHER Role
+PUT {{baseUrl}}/questions/{{questionId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "rawText": "# Pertanyaan ini sudah diupdate.\n-- Jawaban A\n-- Jawaban B\n@a",
+  "status": "PUBLISHED"
+}
+
+### 8. Publish Question (PUT /v1/questions/:id/publish) - Requires ADMIN/TEACHER Role
+PUT {{baseUrl}}/questions/{{questionId}}/publish
+Authorization: Bearer {{accessToken}}
+
+
+### 9. Delete Question (DELETE /v1/questions/:id) - Requires ADMIN/TEACHER Role
+DELETE {{baseUrl}}/questions/{{questionId}}
+Authorization: Bearer {{accessToken}}
+
+
+@
+### EXAM PROGRESS MODULE
+
+@studentAccessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1NGFhZWM0LTM3NDgtNDExMy1iNjgxLTQ3MDc2ZmFmZWE1ZSIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzQ5NDA1MDI2LCJleHAiOjE3NDk0MDg2MjZ9.oN6wdaeWVAapG8EPHgSqCvCn9pDd_qpmmWVXrKGW6DI
+@fkipFacultyId =4efa77d5-890c-496f-ac84-cdd5dde0adf1
+@sampleQuestionId =9de7f6b2-798d-46ba-9f52-18953e0e5bf2
+
+### 1. Save Exam Progress (POST /v1/exam-progress) - Requires STUDENT Role
+POST {{baseUrl}}/exam-progress
+Content-Type: application/json
+Authorization: Bearer {{studentAccessToken}}
+
+{
+  "facultyId": "{{fkipFacultyId}}",
+  "currentQuestionId": "{{sampleQuestionId}}",
+  "completedQuestions": {
+    "{{sampleQuestionId}}": {
+      "answer": "a",
+      "isCorrect": true,
+      "timeTaken": 25
+    }
+  },
+  "score": 80,
+  "status": "IN_PROGRESS"
+}
+
+### 2. Get Student's Exam Progress for Faculty (GET /v1/exam-progress/:facultyId) - Requires STUDENT Role
+GET {{baseUrl}}/exam-progress/{{fkipFacultyId}}
+Authorization: Bearer {{studentAccessToken}}
+
+### 3. Get All Exam Progress (GET /v1/exam-progress) - Requires ADMIN Role
+GET {{baseUrl}}/exam-progress
+Authorization: Bearer {{accessToken}}
+
+### 4. Download Faculty Data (Export for Offline Sync) (GET /v1/exam-progress/export/:facultyId) - Public
+GET {{baseUrl}}/exam-progress/export/{{fkipFacultyId}}
