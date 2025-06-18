@@ -1,0 +1,32 @@
+{
+  "name": "examwoi-monorepo",
+  "version": "1.0.1",
+  "private": true,
+  "description": "Monorepo for Examwoi Hybrid LMS (Backend API & Frontend Admin)",
+  "workspaces": [
+    "api",
+    "frontend"
+  ],
+  "scripts": {
+    "start:backend": "npm start -w api",
+    "dev:backend": "npm run dev -w api",
+    "start:frontend": "cross-env REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL REACT_APP_APP_URL=$REACT_APP_APP_URL REACT_APP_API_KEY=$REACT_APP_API_KEY npm start -w frontend",
+    "dev:frontend": "cross-env REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL REACT_APP_APP_URL=$REACT_APP_APP_URL REACT_APP_API_KEY=$REACT_APP_API_KEY npm run dev -w frontend",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
+    "start:all": "concurrently \"npm start -w api\" \"npm start -w frontend\"",
+    "install:all": "npm install",
+    "prisma:migrate": "npm run prisma:migrate -w api --name",
+    "prisma:generate": "npm run prisma:generate -w api",
+    "prisma:studio": "npm run prisma:studio -w api",
+    "prisma:seed": "npm run prisma:seed -w api",
+    "clean:all": "rimraf -rf ./api/node_modules ./frontend/node_modules ./node_modules"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "rimraf": "^6.0.1"
+  }
+}

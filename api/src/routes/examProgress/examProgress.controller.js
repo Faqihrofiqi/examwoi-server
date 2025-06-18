@@ -1,11 +1,10 @@
 // src/routes/examProgress/examProgress.controller.js
 const express = require("express");
 const router = express.Router();
-const examProgressService = require("./examProgress.service"); // Import service
-const { body, param, query, validationResult } = require("express-validator"); // Untuk validasi input
-const { authenticate, authorize } = require("../../middleware/auth.middleware"); // Import middleware
+const examProgressService = require("./examProgress.service");
+const { body, param, query, validationResult } = require("express-validator");
+const { authenticate, authorize } = require("../../middleware/auth.middleware");
 
-// Middleware pembantu untuk menangani promise (async/await) di route handlers
 const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
@@ -17,28 +16,29 @@ router.post(
   authenticate,
   authorize(["STUDENT"]),
   [
-    body("facultyId").isUUID().withMessage("Valid Faculty ID is required."),
+    body("examPackageId").isUUID().withMessage("ID Paket Ujian tidak valid."),
     body("currentQuestionId")
       .optional()
       .isUUID()
-      .withMessage("Invalid Current Question ID format."),
+      .withMessage("ID Soal Saat Ini tidak valid."),
     body("completedQuestions")
       .optional()
       .isObject()
-      .withMessage("Completed questions must be an object."),
+      .withMessage("Soal yang diselesaikan harus berupa objek."),
     body("score")
       .optional()
       .isInt({ min: 0 })
-      .withMessage("Score must be a non-negative integer."),
+      .withMessage("Skor harus angka non-negatif."),
     body("status")
       .optional()
       .isIn(["IN_PROGRESS", "COMPLETED", "PAUSED"])
-      .withMessage("Status must be IN_PROGRESS, COMPLETED, or PAUSED."),
+      .withMessage("Status tidak valid.")
+      .notEmpty(),
     body("completedAt")
       .optional()
       .isISO8601()
       .toDate()
-      .withMessage("Invalid completedAt date format (ISO 8601)."),
+      .withMessage("Format tanggal selesai tidak valid (ISO 8601)."),
   ],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -46,50 +46,47 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const userId = req.user.id; // Get userId from authenticated user
-    const { facultyId } = req.body;
+    const userId = req.user.id;
+    const { examPackageId } = req.body;
     const progress = await examProgressService.saveExamProgress(
       userId,
-      facultyId,
+      examPackageId,
       req.body
     );
     res
       .status(200)
-      .json({ message: "Exam progress saved successfully!", data: progress });
+      .json({ message: "Progres ujian berhasil disimpan!", data: progress });
   })
 );
 
-// GET /exam-progress/:facultyId - Mengambil progres ujian siswa untuk fakultas tertentu (Student Only)
+// GET /exam-progress/:examPackageId - Mengambil progres ujian siswa untuk paket tertentu (Student Only)
 router.get(
-  "/:facultyId",
+  "/:examPackageId",
   authenticate,
   authorize(["STUDENT"]),
-  [param("facultyId").isUUID().withMessage("Invalid Faculty ID format.")],
+  [param("examPackageId").isUUID().withMessage("ID Paket Ujian tidak valid.")],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const userId = req.user.id; // Get userId from authenticated user
-    const { facultyId } = req.params;
+    const userId = req.user.id;
+    const { examPackageId } = req.params;
     const progress = await examProgressService.getExamProgress(
       userId,
-      facultyId
+      examPackageId
     );
     if (!progress) {
       return res
         .status(404)
         .json({
-          message: "Exam progress not found for this user and faculty.",
+          message: "Progres ujian tidak ditemukan untuk user dan paket ini.",
         });
     }
     res
       .status(200)
-      .json({
-        message: "Exam progress retrieved successfully!",
-        data: progress,
-      });
+      .json({ message: "Progres ujian berhasil diambil!", data: progress });
   })
 );
 
@@ -99,15 +96,15 @@ router.get(
   authenticate,
   authorize(["ADMIN"]),
   [
-    query("userId").optional().isUUID().withMessage("Invalid User ID format."),
-    query("facultyId")
+    query("userId").optional().isUUID().withMessage("ID User tidak valid."),
+    query("examPackageId")
       .optional()
       .isUUID()
-      .withMessage("Invalid Faculty ID format."),
+      .withMessage("ID Paket Ujian tidak valid."),
     query("status")
       .optional()
       .isIn(["IN_PROGRESS", "COMPLETED", "PAUSED"])
-      .withMessage("Status must be IN_PROGRESS, COMPLETED, or PAUSED."),
+      .withMessage("Status tidak valid."),
   ],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -118,31 +115,30 @@ router.get(
     res
       .status(200)
       .json({
-        message: "All exam progresses retrieved successfully!",
+        message: "Semua progres ujian berhasil diambil!",
         data: progresses,
       });
   })
 );
 
-// GET /export/:facultyId - Download soal per fakultas (untuk offline sync) (Public)
-// Ini adalah endpoint yang akan digunakan oleh Flutter untuk mengunduh semua soal dan aset untuk offline mode.
+// GET /export/:examPackageId - Download soal per paket (untuk offline sync) (Public)
 router.get(
-  "/export/:facultyId",
-  [param("facultyId").isUUID().withMessage("Invalid Faculty ID format.")],
+  "/export/:examPackageId",
+  [param("examPackageId").isUUID().withMessage("ID Paket Ujian tidak valid.")],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { facultyId } = req.params;
-    const downloadData = await examProgressService.getDownloadDataForFaculty(
-      facultyId
-    );
+    const { examPackageId } = req.params;
+    const downloadData = await examProgressService.getDownloadDataForPackage(
+      examPackageId
+    ); // Mengganti nama fungsi
     res
       .status(200)
       .json({
-        message: "Faculty exam data and assets retrieved successfully!",
+        message: "Data ujian dan aset berhasil diambil!",
         data: downloadData,
       });
   })

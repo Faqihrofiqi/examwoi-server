@@ -68,7 +68,7 @@ const DataSoalPage = () => {
     setQuestionImageFile(null);
     setQuestionImageUrlPreview('');
     setIsBatchMode(false);
-    setShowQuestionForm(false);
+    setShowQuestionForm(true);
     setStructuredQuestionForm({
       questionText: '', options: ['', '', '', ''], correctOptionId: 'a',
       imageUrl: '', audioUrl: '', questionType: 'TEXT'
@@ -732,28 +732,28 @@ const DataSoalPage = () => {
 
       <div className="soal-content-layout">
         {/* Sidebar Kategori */}
-                <aside className="categories-sidebar-card card">
-                  <div className="card-header card-header-primary">
-                    <h4 className="card-title">Kategori (Fakultas)</h4> {/* Judul sidebar baru */}
-                  </div>
-                  <div className="card-body">
-                    <div className="category-list">
-                      {faculties.map((faculty) => (
-                        <button
-                          key={faculty.id}
-                          className={`category-item-button ${activeFacultyId === faculty.id ? 'active' : ''}`}
-                          onClick={() => handleCategoryClick(faculty.id, faculty.name)}
-                        >
-                          {faculty.name}
-                        </button>
-                      ))}
-                      <button className="add-category-button" onClick={() => setShowAddCategoryForm(true)} title="Tambah Kategori Baru">
-                        <i className="material-icons">add</i>
-                        <span>Tambah Kategori</span>
-                      </button>
-                    </div>
-                  </div>
-                </aside> 
+        <aside className="categories-sidebar-card card">
+          <div className="card-header card-header-primary">
+            <h4 className="card-title">Kategori (Fakultas)</h4>
+          </div>
+          <div className="card-body">
+            <div className="category-list">
+              {faculties.map((faculty) => (
+                <button
+                  key={faculty.id}
+                  className={`category-item-button ${activeFacultyId === faculty.id ? 'active' : ''}`}
+                  onClick={() => handleCategoryClick(faculty.id, faculty.name)}
+                >
+                  {faculty.name}
+                </button>
+              ))}
+              <button className="add-category-button" onClick={() => setShowAddCategoryForm(true)} title="Tambah Kategori Baru">
+                <i className="material-icons">add</i>
+                <span>Tambah Kategori</span>
+              </button>
+            </div>
+          </div>
+        </aside>
 
         <section className="soal-table-section">
           {/* Header Utama dengan Tombol Tambah Soal / Paket */}
@@ -1347,3 +1347,7 @@ const DataSoalPage = () => {
 };
 
 export default DataSoalPage;
+
+
+
+

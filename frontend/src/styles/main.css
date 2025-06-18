@@ -21,9 +21,9 @@
     --color-primary: #3498db;
     --color-primary-dark: #2980b9;
     --color-primary-light: #eaf5fb;
-    --color-purple: #9c27b0;
-    --color-purple-dark: #7b1fa2;
-    --color-purple-gradient: linear-gradient(60deg, #ab47bc, #8e24aa);
+    --color-purple: #0ca2ec;
+    --color-purple-dark: #0885de;
+    --color-purple-gradient: linear-gradient(60deg, #114dc5, #1892e3);
     --color-success: #28a745;
     --color-danger: #e74c3c;
     --color-warning: #ffc107;
@@ -37,7 +37,7 @@
     --bg-sidebar: #404040;
     --bg-table-header: #4a6076;
     --bg-row-hover: #f8fafd;
-    --auth-bg-gradient: linear-gradient(to right, #6a11cb, #2575fc);
+    --auth-bg-gradient: linear-gradient(to right, #1f08cf, #2575fc);
 
     /* Teks */
     --text-dark: #3c4858;
@@ -113,7 +113,7 @@ code {
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
-    margin-left: auto;
+    margin-left: 0;
 }
 
 .text-center {
@@ -297,7 +297,7 @@ code {
 .form-control {
     display: block;
     width: 100%;
-    padding: 10px 14px;
+    padding: 16px 16px;
     font-size: 1rem;
     font-family: var(--font-primary);
     color: var(--text-dark);
@@ -349,7 +349,7 @@ textarea.form-control {
 .table-responsive {
     display: block;
     width: 100%;
-    overflow-x: auto;
+    overflow-x: scroll;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -371,7 +371,7 @@ textarea.form-control {
 }
 
 .table tbody td {
-    padding: 14px 16px;
+    padding: 6px 6px;
     vertical-align: middle;
     border-top: 1px solid var(--border-light);
 }
@@ -550,7 +550,7 @@ textarea.form-control {
     display: flex;
     flex-wrap: wrap;
     /* Tombol bisa wrap di mobile */
-    gap: 10px;
+    gap: 15px;
     justify-content: center;
 }
 
@@ -582,14 +582,14 @@ textarea.form-control {
 /* Grid khusus untuk tabel soal */
 .data-soal-page .table-header-row-soal,
 .data-soal-page .table-row-soal {
-    display: grid;
+    display: inline-grid;
     /* (Pertanyaan, Aksi) untuk mobile */
-    grid-template-columns: 1fr 80px;
+    grid-template-columns: 1fr 20px;
     align-items: stretch;
 }
 
 .data-soal-page .table-cell-soal {
-    padding: 12px;
+    padding: 1px;
     display: flex;
     align-items: center;
     border-right: 1px solid var(--border-light);
@@ -621,7 +621,7 @@ textarea.form-control {
     }
 
     .data-soal-page .categories-sidebar-card {
-        flex: 0 0 220px;
+        flex: 0 0 210px;
         /* Lebar sidebar tetap */
     }
 
@@ -661,7 +661,7 @@ textarea.form-control {
     .data-soal-page .table-header-row-soal,
     .data-soal-page .table-row-soal {
         /* No, ID, Q, A, B, C, D, Aksi */
-        grid-template-columns: 60px 90px 3fr repeat(4, 1.2fr) 100px;
+        grid-template-columns: 60px 20px 3fr repeat(4, 1.2fr) 100px;
     }
 }
 

@@ -4,7 +4,7 @@
   /* Warna untuk Sidebar & Navbar (gaya Material Dashboard) */
   --sidebar-bg: #404040;
   --sidebar-text: #FFFFFF;
-  --sidebar-active-bg: linear-gradient(60deg, #AB47BC, #8E24AA);
+  --sidebar-active-bg: linear-gradient(60deg, #238fcd, #250dad);
   --sidebar-hover-bg: rgba(200, 200, 200, 0.2);
 
   --navbar-bg: #FFFFFF;
@@ -32,7 +32,7 @@
   --color-green: linear-gradient(60deg, #66BB6A, #43A047);
   --color-red: linear-gradient(60deg, #EF5350, #E53935);
   --color-blue: linear-gradient(60deg, #26C6DA, #00ACC1);
-  --color-purple: linear-gradient(60deg, #AB47BC, #8E24AA);
+  --color-purple: linear-gradient(60deg, #1a48d0, #2e0ae0);
   --color-dark-purple: linear-gradient(60deg, #424242, #212121);
   --card-header-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(0, 0, 0, 0.2);
 

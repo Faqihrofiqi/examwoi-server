@@ -1,0 +1,68 @@
+.access-denied-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Mengisi seluruh tinggi layar */
+    background-color: #f4f7f6;
+    /* Warna latar belakang halaman yang soft */
+    padding: 20px;
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.access-denied-card {
+    background-color: #ffffff;
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 550px;
+    width: 100%;
+    border-top: 5px solid #e74c3c;
+    /* Aksen warna merah sebagai tanda "warning" */
+}
+
+.icon-container .lock-icon {
+    font-size: 80px;
+    /* Membuat ikon menjadi sangat besar */
+    color: #e74c3c;
+    /* Warna ikon disamakan dengan border atas */
+    margin-bottom: 20px;
+}
+
+.error-title {
+    font-size: 2.5rem;
+    /* 40px */
+    font-weight: 700;
+    color: #343a40;
+    margin: 0;
+}
+
+.error-code {
+    font-size: 1rem;
+    /* 16px */
+    color: #6c757d;
+    margin-bottom: 25px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.error-description {
+    font-size: 1.1rem;
+    /* 18px */
+    color: #495057;
+    line-height: 1.6;
+}
+
+.access-denied-card .btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    /* Tombol berbentuk kapsul */
+    transition: all 0.3s ease;
+}
+
+.access-denied-card .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.35); }

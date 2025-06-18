@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import API_CONFIG from '../api/apiConfig';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL; // Nanti akan kita ubah dengan dotenv
+const API_BASE_URL = API_CONFIG.API_BASE_URL
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');

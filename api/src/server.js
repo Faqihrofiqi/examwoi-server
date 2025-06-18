@@ -1,5 +1,5 @@
 // src/server.js
-require("dotenv").config(); // Load environment variables first
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 
 const app = require("./app");
 

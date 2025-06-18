@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
 
-const API_BASE_URL = 'process.env.REACT_APP_API_BASE_URL'; // Sesuaikan dengan URL backend Anda
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import API_CONFIG from '../api/apiConfig';
+import apiClient from '../api/axiosConfig';
 
 const ResetPasswordPage = () => {
     const location = useLocation();
@@ -52,7 +52,7 @@ const ResetPasswordPage = () => {
         setMessage('');
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+            const response = await apiClient.post('/auth/reset-password', {
                 email,
                 otp,
                 newPassword,
@@ -63,7 +63,7 @@ const ResetPasswordPage = () => {
                 setMessageType('success');
                 setTimeout(() => {
                     navigate('/admin/login');
-                }, 2500); // Redirect setelah 2.5 detik
+                }, 2500);
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message ||
@@ -73,7 +73,7 @@ const ResetPasswordPage = () => {
             setMessageType('danger');
         }
     };
-
+    
     const Alert = ({ msg, type }) => {
         if (!msg) return null;
         return (

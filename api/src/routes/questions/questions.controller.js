@@ -34,15 +34,15 @@ router.post(
   "/preview",
   [
     body("rawText").notEmpty().withMessage("rawText diperlukan untuk pratinjau."),
-    body("isBatch").optional().isBoolean().withMessage("isBatch harus boolean.") // <-- Tambah validasi isBatch
+    body("isBatch").optional().isBoolean().withMessage("isBatch harus boolean.")
   ],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const { rawText, isBatch } = req.body; // Ambil isBatch
-    const parsedContent = await questionService.previewQuestion(rawText, isBatch); // Teruskan isBatch
+    const { rawText, isBatch } = req.body;
+    const parsedContent = await questionService.previewQuestion(rawText, isBatch);
     res.status(200).json({
       message: "Pratinjau soal berhasil dibuat!",
       data: parsedContent,
@@ -56,17 +56,13 @@ router.post(
   authenticate,
   authorize(["ADMIN", "TEACHER"]),
   [
-    body("facultyId").isUUID().withMessage("ID Fakultas tidak valid."),
-    body("rawText").optional().isString(),
+    body("examPackageId").isUUID().withMessage("ID Paket Ujian tidak valid."),
+    body("rawText").optional().isString(), // Izinkan rawText
     body("content")
       .optional()
       .isObject()
-      .withMessage("Konten harus berupa objek JSON valid."),
-    body("status")
-      .optional()
-      .isIn(["DRAFT", "PUBLISHED"])
-      .withMessage("Status harus DRAFT atau PUBLISHED."),
-    body("isBatch").optional().isBoolean().withMessage("isBatch harus boolean."), // <-- Tambah validasi isBatch
+      .withMessage("Konten harus berupa objek JSON valid."), // Izinkan content
+    body("isBatch").optional().isBoolean().withMessage("isBatch harus boolean."),
     body("content.imageUrl").optional().custom(isBase64Image),
     body("content.audioUrl").optional().custom(isBase64Audio),
   ],
@@ -76,30 +72,24 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { rawText, content, facultyId, status, isBatch } = req.body; // Ambil isBatch
+    const { rawText, content, examPackageId, isBatch } = req.body;
 
-    // Validasi input rawText/content dan isBatch
-    if (isBatch) {
-      if (!rawText) { // RawText wajib untuk batch
-        return res.status(400).json({ message: "rawText diperlukan untuk pembuatan soal secara batch." });
-      }
-      if (content) { // Content tidak diizinkan untuk batch
-        return res.status(400).json({ message: "Konten terstruktur tidak diizinkan untuk pembuatan soal secara batch." });
-      }
-    } else { // Single question mode
-      if (!rawText && !content) {
-        return res.status(400).json({ message: "rawText atau konten terstruktur harus disediakan untuk satu soal." });
-      }
-      if (rawText && content) {
-        return res.status(400).json({ message: "Tidak dapat menyediakan rawText dan konten sekaligus untuk satu soal." });
-      }
+    // Perbaikan: Hapus validasi ketat "rawText DAN content tidak boleh bersamaan" di controller
+    // Biarkan service yang menangani prioritas atau error jika input tidak sesuai logika.
+    // Validasi isBatch dan rawText/content tetap relevan:
+    if (isBatch && (!rawText || content)) { // Jika isBatch=true, rawText wajib, content tidak boleh ada
+      return res.status(400).json({ message: "Untuk pembuatan soal secara batch, hanya field rawText yang diizinkan." });
+    }
+    // Jika tidak isBatch (single mode), harus ada rawText ATAU content
+    if (!isBatch && (!rawText && !content)) {
+      return res.status(400).json({ message: "rawText atau konten terstruktur harus disediakan untuk satu soal." });
     }
 
+    // Service akan menerima kedua `rawText` dan `content` dan memprioritaskan `content` jika ada
     const newQuestion = await questionService.createQuestion(
-      facultyId,
-      { rawText, content },
-      status,
-      isBatch // Teruskan isBatch
+      examPackageId,
+      { rawText, content }, // Kirim kedua field ini ke service
+      isBatch
     );
 
     if (isBatch) {
@@ -114,21 +104,15 @@ router.post(
 router.get(
   "/",
   [
-    query("facultyId")
-      .optional()
-      .isUUID()
-      .withMessage("ID Fakultas tidak valid."),
-    query("status")
-      .optional()
-      .isIn(["DRAFT", "PUBLISHED", "ARCHIVED"])
-      .withMessage("Status harus DRAFT, PUBLISHED, atau ARCHIVED."),
+    query("examPackageId").optional().isUUID().withMessage("ID Paket Ujian tidak valid."),
   ],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const questions = await questionService.getQuestions(req.query);
+    const { examPackageId } = req.query;
+    const questions = await questionService.getQuestions({ examPackageId });
     res
       .status(200)
       .json({ message: "Soal berhasil diambil!", data: questions });
@@ -137,7 +121,7 @@ router.get(
 
 // GET /questions/:id - Mengambil detail soal
 router.get(
-  "/:id", // <-- PERBAIKAN PATH: Hapus /status
+  "/:id",
   [param("id").isUUID().withMessage("ID Soal tidak valid.")],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -158,19 +142,15 @@ router.put(
   authorize(["ADMIN", "TEACHER"]),
   [
     param("id").isUUID().withMessage("ID Soal tidak valid."),
-    body("facultyId")
+    body("examPackageId")
       .optional()
       .isUUID()
-      .withMessage("ID Fakultas tidak valid."),
-    body("rawText").optional().isString(),
+      .withMessage("ID Paket Ujian tidak valid."),
+    body("rawText").optional().isString(), // Izinkan rawText
     body("content")
       .optional()
       .isObject()
-      .withMessage("Konten harus berupa objek JSON valid."),
-    body("status")
-      .optional()
-      .isIn(["DRAFT", "PUBLISHED", "ARCHIVED"])
-      .withMessage("Status harus DRAFT, PUBLISHED, atau ARCHIVED."),
+      .withMessage("Konten harus berupa objek JSON valid."), // Izinkan content
     body("content.imageUrl").optional().custom(isBase64Image),
     body("content.audioUrl").optional().custom(isBase64Audio),
   ],
@@ -180,75 +160,25 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    if (req.body.rawText && req.body.content) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Tidak dapat menyediakan rawText dan konten sekaligus untuk pembaruan. Pilih salah satu.",
-        });
+    // Perbaikan: Hapus validasi ketat "rawText DAN content tidak boleh bersamaan" di controller
+    // Biarkan service yang menangani prioritas atau error jika input tidak sesuai logika.
+    // Jika tidak ada rawText maupun content yang dikirim, service akan mempertahankan yang lama.
+    if (Object.keys(req.body).length === 0) { // Jika body kosong sama sekali
+      return res.status(400).json({ message: "Setidaknya satu field (rawText, content, atau examPackageId) harus disediakan untuk pembaruan." });
     }
 
     const updatedQuestion = await questionService.updateQuestion(
       req.params.id,
-      req.body
-    );
-    res
-      .status(200)
-      .json({
-        message: "Soal berhasil diperbarui!",
-        data: updatedQuestion,
-      });
-  })
-);
-
-// PUT /questions/:id/publish - Menerbitkan soal (khusus DRAFT -> PUBLISHED)
-router.put(
-  "/:id/publish",
-  authenticate,
-  authorize(["ADMIN", "TEACHER"]),
-  [param("id").isUUID().withMessage("ID Soal tidak valid.")],
-  asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const publishedQuestion = await questionService.publishQuestion(
-      req.params.id
+      req.body // Kirim semua body yang valid ke service
     );
     res.status(200).json({
-      message: "Soal berhasil diterbitkan!",
-      data: publishedQuestion,
-    });
-  })
-);
-
-// PUT /questions/:id/status - Mengubah status soal (PUBLISHED -> ARCHIVED, ARCHIVED -> DRAFT)
-router.put(
-  "/:id/status",
-  authenticate,
-  authorize(["ADMIN", "TEACHER"]),
-  [
-    param("id").isUUID().withMessage("ID Soal tidak valid."),
-    // Memungkinkan DRAFT, PUBLISHED, ARCHIVED karena validasi transisi ada di service
-    body("status").isIn(["DRAFT", "PUBLISHED", "ARCHIVED"]).withMessage("Status baru tidak valid. Harus DRAFT, PUBLISHED, atau ARCHIVED.").notEmpty(),
-  ],
-  asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const { status: newStatus } = req.body;
-    const updatedQuestion = await questionService.updateQuestionStatus(
-      req.params.id,
-      newStatus
-    );
-    res.status(200).json({
-      message: `Status soal berhasil diperbarui menjadi ${newStatus}!`,
+      message: "Soal berhasil diperbarui!",
       data: updatedQuestion,
     });
   })
 );
+
+// ... (DELETE /questions/:id tetap sama) ...
 
 // DELETE /questions/:id - Menghapus soal (Admin atau Guru)
 router.delete(

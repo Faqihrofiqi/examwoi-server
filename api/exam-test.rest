@@ -1,0 +1,243 @@
+### GLOBAL VARIABLES
+
+@baseUrl = http://localhost:3000/v1
+@adminEmail = admin@examwoi.com
+@adminPassword = admin123
+@teacherEmail = teacher@examwoi.com
+@teacherPassword = teacher123
+@studentEmail = student@examwoi.com
+@studentPassword = student123
+
+@adminAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc3OTRkNGQzLWYxZWQtNGFjZi04OTU4LTBjNjYxOTA5MWU0NCIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAxODAyNzgsImV4cCI6MTc1MDE4Mzg3OH0.5NDPwBJiUxVCuD1GozYfKhKBmF7CG7iMQcgHOGtLjzM
+@adminRefreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc3OTRkNGQzLWYxZWQtNGFjZi04OTU4LTBjNjYxOTA5MWU0NCIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAxODAyNzgsImV4cCI6MTc1Mjc3MjI3OH0.AclhOF6abqeaV_suUlQ5DY-lZKIMmfcy6JNzryitCnM
+@teacherAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIxODU4YmI4LWVmZWItNDM2Yy1hODQzLTFhZWI1YWNjNTc3MiIsImVtYWlsIjoidGVhY2hlckBleGFtd29pLmNvbSIsInJvbGUiOiJURUFDSEVSIiwiaWF0IjoxNzUwMTgwMzcxLCJleHAiOjE3NTAxODM5NzF9.8v3Mm9_0g1l-j2NxPe44BhwRGkA952JMXm-XdssINYk
+@studentAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk5ZTc5NGJkLTcxY2QtNDNkZC04YzZmLWQwYWQ2NTgwODI2NCIsImVtYWlsIjoic3R1ZGVudEBleGFtd29pLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzUwMTgwODc3LCJleHAiOjE3NTAxODQ0Nzd9.L07tqIHby1sv1JZO1Zia1JqjBn6lGQA2c_Y4Gil7-Ew
+
+@fkipFacultyId =d1dd3413-38d0-448e-be17-945b3fb22dd8
+@fteknikFacultyId = 7f0613a0-397c-4839-8633-53c6651aec6b
+@fkedokteranFacultyId = 75a02d0e-bad6-4023-a3de-a501a9effeef
+
+@fkipPackageId = f5e9985a-0267-414b-9047-233fa9cd172a
+@fteknikPackageId = f5e9985a-0267-414b-9047-233fa9cd172a
+@fkedokteranPackageId = 123e4567-e89b-12d3-a456-426614174000
+
+@sampleQuestionId = 
+
+### AUTHENTICATION - RUN THESE FIRST TO GET TOKENS
+
+### 1. Admin Login (POST /v1/auth/login)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Save Admin Tokens
+# @set adminAccessToken = {{res.body.accessToken}}
+# @set adminRefreshToken = {{res.body.refreshToken}}
+
+### 2. Teacher Login (POST /v1/auth/login)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}"
+}
+
+### Save Teacher Tokens
+# @set teacherAccessToken = {{res.body.accessToken}}
+
+### 3. Student Login (POST /v1/auth/login)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}"
+}
+
+### Save Student Token
+# @set studentAccessToken = {{res.body.accessToken}}
+
+
+### FACULTY IDs - Fetch to get IDs for creating packages
+
+### 1. Get All Faculties (GET /v1/faculties)
+GET {{baseUrl}}/faculties
+
+### Save Faculty IDs (manually copy from response or use @set)
+# @set fkipFacultyId = YOUR_FKIP_FACULTY_ID_HERE
+# @set fteknikFacultyId = YOUR_FTEKNIK_FACULTY_ID_HERE
+# @set fkedokteranFacultyId = YOUR_FKEDOKTERAN_FACULTY_ID_HERE
+
+
+---
+### EXAM PACKAGE MANAGEMENT MODULE
+
+### 1. Create Exam Package (POST /v1/exam-packages) - ADMIN/TEACHER Only (DRAFT by default)
+POST {{baseUrl}}/exam-packages
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "name": "Simulasi UTBK 2025 - Paket Ilmu Komputer",
+  "description": "Paket soal simulasi untuk calon mahasiswa Ilmu Komputer.",
+  "facultyId": "{{fkedokteranPackageId}}",
+  "durationMinutes": 120,
+  "totalQuestions": 0
+}
+
+### Save Exam Package ID
+# @set fkipPackageId = {{res.body.data.id}}
+
+### 2. Create Another Exam Package (DRAFT)
+POST {{baseUrl}}/exam-packages
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "name": "Simulasi Kedokteran - Paket A (Draft)",
+  "description": "Paket soal khusus kedokteran untuk latihan.",
+  "facultyId": "{{fteknikFacultyId}}",
+  "durationMinutes": 150
+}
+
+### Save Kedokteran Package ID
+# @set fkedokteranPackageId = {{res.body.data.id}}
+
+
+### 3. Get All Exam Packages (GET /v1/exam-packages) - Filter by facultyId or status (Public)
+GET {{baseUrl}}/exam-packages?facultyId={{fteknikFacultyId}}&status=DRAFT
+
+### 4. Get Exam Package by ID (GET /v1/exam-packages/:id) - Public
+GET {{baseUrl}}/exam-packages/a59ebc88-3dc3-496f-89c3-e1807c25238d
+
+### 5. Update Exam Package (PUT /v1/exam-packages/:id) - ADMIN/TEACHER Only
+PUT {{baseUrl}}/exam-packages/a59ebc88-3dc3-496f-89c3-e1807c25238d
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "description": "Paket soal simulasi UTBK terbaru untuk Ilmu Komputer 2025."
+}
+
+### 6. Update Exam Package Status (PUBLISH) (PUT /v1/exam-packages/:id/status) - ADMIN/TEACHER Only
+# Note: Paket harus punya soal dulu sebelum bisa di-publish.
+# Jika ada error "Tidak dapat memublikasikan paket tanpa soal", tambahkan soal dulu ke paket ini.
+PUT {{baseUrl}}/exam-packages/a59ebc88-3dc3-496f-89c3-e1807c25238d/status
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "status": "PUBLISHED"
+}
+
+### 7. Update Exam Package Status (ARCHIVE) (PUT /v1/exam-packages/:id/status) - ADMIN/TEACHER Only
+# Note: Paket harus sudah PUBLISHED
+PUT {{baseUrl}}/exam-packages/{{fkipPackageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "status": "ARCHIVED"
+}
+
+### 8. Update Exam Package Status (DRAFT from ARCHIVED) (PUT /v1/exam-packages/:id/status) - ADMIN/TEACHER Only
+# Note: Paket harus sudah ARCHIVED
+PUT {{baseUrl}}/exam-packages/{{fkipPackageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "status": "DRAFT"
+}
+
+### 9. Delete Exam Package (DELETE /v1/exam-packages/:id) - ADMIN/TEACHER Only
+# Note: Ini akan menghapus semua soal dan progres ujian yang terkait dengan paket ini
+DELETE {{baseUrl}}/exam-packages/{{fkedokteranPackageId}}
+Authorization: Bearer {{adminAccessToken}}
+
+
+---
+### QUESTION MANAGEMENT MODULE (Updated for Exam Packages)
+
+### 1. Create Question (Single) (POST /v1/questions) - ADMIN/TEACHER Only
+# Assign to the Exam Package created above
+POST {{baseUrl}}/questions
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "examPackageId": "a59ebc88-3dc3-496f-89c3-e1807c25238d",
+  "rawText": "# Apa kepanjangan dari CPU?\n-- Central Processing Unit\n-- Central Program Unit\n-- Computer Personal Unit\n@a",
+  "status": "DRAFT" 
+}
+
+### Save Question ID (for single question creation)
+# @set sampleQuestionId = {{res.body.data.id}}
+
+### 2. Create Questions (Batch) (POST /v1/questions) - ADMIN/TEACHER Only
+# Assign to the Exam Package created above
+POST {{baseUrl}}/questions
+Content-Type: application/json
+Authorization: Bearer {{teacherAccessToken}}
+
+{
+  "examPackageId": "a59ebc88-3dc3-496f-89c3-e1807c25238d",
+  "rawText": "# Bahasa pemrograman apa yang paling sering digunakan untuk pengembangan web sisi klien (frontend)?\n-- Python\n-- Java\n-- JavaScript\n-- C++\n@c\n\n# Apa nama komponen hardware yang berfungsi sebagai \"otak\" komputer?\n-- RAM\n-- Hard Drive\n-- Motherboard\n-- Processor\n@d",
+  "isBatch": true
+}
+
+### 3. Get All Questions for a Package (GET /v1/questions?examPackageId=...)
+GET {{baseUrl}}/questions?examPackageId=a59ebc88-3dc3-496f-89c3-e1807c25238d
+
+### 4. Get Question by ID (GET /v1/questions/:id)
+GET {{baseUrl}}/questions/037b4c1e-02ed-4815-a319-5bafbfc64915
+
+### 5. Update Question (PUT /v1/questions/:id) - ADMIN/TEACHER Only
+PUT {{baseUrl}}/questions/037b4c1e-02ed-4815-a319-5bafbfc64915
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "rawText": "# Apa kepanjangan dari CPU yang diperbarui?\n-- Central Processing Unit Baru\n-- Central Program Unit Baru\n@a"
+}
+
+### 6. Delete Question (DELETE /v1/questions/:id) - ADMIN/TEACHER Only
+DELETE {{baseUrl}}/questions/037b4c1e-02ed-4815-a319-5bafbfc64915
+Authorization: Bearer {{adminAccessToken}}
+
+
+---
+### EXAM PROGRESS MODULE (Updated for Exam Packages)
+
+### 1. Save Exam Progress (POST /v1/exam-progress) - STUDENT Only
+# Requires: studentAccessToken, and a PUBLISHED exam package ID
+POST {{baseUrl}}/exam-progress
+Content-Type: application/json
+Authorization: Bearer {{studentAccessToken}}
+
+{
+  "examPackageId": "0b34dfaa-10b0-41ef-b0f7-dfbffd62f4d6",
+  "currentQuestionId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+  "completedQuestions": {
+    "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13": { "answer": "a", "isCorrect": true, "timeTaken": 30 }
+  },
+  "score": 100,
+  "status": "COMPLETED"
+}
+
+### 2. Get Student's Exam Progress for Package (GET /v1/exam-progress/:examPackageId) - STUDENT Only
+GET {{baseUrl}}/exam-progress/d1dd3413-38d0-448e-be17-945b3fb22dd8
+Authorization: Bearer {{studentAccessToken}}
+
+### 3. Get All Exam Progress (GET /v1/exam-progress) - ADMIN Only
+GET {{baseUrl}}/exam-progress
+Authorization: Bearer {{adminAccessToken}}
+
+### 4. Download Exam Package Data (Export for Offline Sync) (GET /v1/exam-progress/export/:examPackageId) - Public
+# Requires the package to be PUBLISHED
+GET {{baseUrl}}/exam-progress/export/1145837a-249c-414c-977e-9ca1a5560f2d

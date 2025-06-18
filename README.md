@@ -43,25 +43,20 @@ Pastikan sistem Anda memiliki:
 - PostgreSQL
 - Akun SMTP2GO (untuk OTP email)
 
-## 🔧 Setup Backend (api)
+## 🔧 Setup (ALL)
 1. Jalankan `npm install`
-2. Buat file `.env` berdasarkan `.env.example`
+2. Buat file `.env` berdasarkan `.env.example` untuk kedua project
 3. Migrasikan dan seed database:
-   - `npx prisma migrate dev --name init_database_schema`
-   - `npx prisma generate`
+   - `npm run prisma:migrate`
+   - `npm run prisma:generate`
    - `npm run prisma:seed`
-4. Jalankan server dengan `npm run dev`
-
-## 🎨 Setup Frontend (examwoi-frontend)
-1. Jalankan `npm install`
-2. Buat file `.env` berdasarkan `.env.example`
-3. Jalankan aplikasi React dengan `npm start`
+4. Jalankan server dengan `npm run dev:backend`
+4. Jalankan frontend dengan `npm run start:frontend`
 
 ## 🔄 Integrasi dan Pengujian
 1. Jalankan backend (`npm run dev`)
-2. Jalankan frontend (`npm start`)
-3. Akses dashboard di: [http://localhost:3001/admin/login](http://localhost:3001/admin/login)
-4. Login sebagai admin dan uji:
+2. Akses dashboard di: [http://localhost:3001/admin/login](http://localhost:3001/admin/login)
+3. Login sebagai admin dan uji:
    - Navigasi halaman soal dan user
    - Tambah/edit soal (media, batch, raw)
    - Kelola user dan kategori

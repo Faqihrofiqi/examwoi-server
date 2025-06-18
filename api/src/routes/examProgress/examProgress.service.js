@@ -3,23 +3,33 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 /**
- * Saves or updates a student's exam progress for a specific faculty.
+ * Saves or updates a student's exam progress for a specific exam package.
  * @param {string} userId - The ID of the student.
- * @param {string} facultyId - The ID of the faculty.
+ * @param {string} examPackageId - The ID of the exam package.
  * @param {object} progressData - The progress data from the client (currentQuestionId, completedQuestions, score, status, completedAt).
  * @returns {Promise<object>} The updated exam progress record.
  */
-async function saveExamProgress(userId, facultyId, progressData) {
+async function saveExamProgress(userId, examPackageId, progressData) {
   const { currentQuestionId, completedQuestions, score, status, completedAt } =
     progressData;
 
-  // Find existing progress or create a new one
+  // Pastikan examPackageId valid
+  const examPackage = await prisma.examPackage.findUnique({
+    where: { id: examPackageId },
+  });
+  if (!examPackage) {
+    const error = new Error("Paket ujian tidak ditemukan.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Cari progres yang sudah ada atau buat yang baru
   let examProgress = await prisma.examProgress.findFirst({
-    where: { userId, facultyId },
+    where: { userId, examPackageId },
   });
 
   if (examProgress) {
-    // Update existing progress
+    // Update progres yang sudah ada
     examProgress = await prisma.examProgress.update({
       where: { id: examProgress.id },
       data: {
@@ -28,19 +38,19 @@ async function saveExamProgress(userId, facultyId, progressData) {
         score,
         status,
         completedAt: completedAt ? new Date(completedAt) : null,
-        updatedAt: new Date(), // Manually update updatedAt for clarity
+        updatedAt: new Date(), // Perbarui timestamp
       },
     });
   } else {
-    // Create new progress
+    // Buat progres baru
     examProgress = await prisma.examProgress.create({
       data: {
         userId,
-        facultyId,
+        examPackageId, // Mengaitkan ke examPackage
         currentQuestionId,
         completedQuestions,
         score,
-        status: status || "IN_PROGRESS", // Default to IN_PROGRESS
+        status: status || "IN_PROGRESS", // Default status
         completedAt: completedAt ? new Date(completedAt) : null,
       },
     });
@@ -49,16 +59,22 @@ async function saveExamProgress(userId, facultyId, progressData) {
 }
 
 /**
- * Retrieves a student's exam progress for a specific faculty.
+ * Retrieves a student's exam progress for a specific exam package.
  * @param {string} userId - The ID of the student.
- * @param {string} facultyId - The ID of the faculty.
+ * @param {string} examPackageId - The ID of the exam package.
  * @returns {Promise<object|null>} The exam progress record or null if not found.
  */
-async function getExamProgress(userId, facultyId) {
+async function getExamProgress(userId, examPackageId) {
   const examProgress = await prisma.examProgress.findFirst({
-    where: { userId, facultyId },
+    where: { userId, examPackageId },
     include: {
-      faculty: { select: { id: true, name: true } },
+      examPackage: {
+        select: {
+          id: true,
+          name: true,
+          faculty: { select: { id: true, name: true } },
+        },
+      }, // Include package and its faculty info
       user: { select: { id: true, email: true, username: true } },
     },
   });
@@ -67,22 +83,28 @@ async function getExamProgress(userId, facultyId) {
 
 /**
  * Retrieves all exam progress records (for admin/reporting).
- * @param {object} filters - Optional filters (e.g., userId, facultyId, status).
+ * @param {object} filters - Optional filters (e.g., userId, examPackageId, status).
  * @returns {Promise<Array<object>>} List of exam progress records.
  */
 async function getAllExamProgress(filters = {}) {
-  const { userId, facultyId, status } = filters;
+  const { userId, examPackageId, status } = filters;
   const where = {};
 
   if (userId) where.userId = userId;
-  if (facultyId) where.facultyId = facultyId;
+  if (examPackageId) where.examPackageId = examPackageId;
   if (status) where.status = status;
 
   const progresses = await prisma.examProgress.findMany({
     where,
     include: {
       user: { select: { id: true, email: true, username: true } },
-      faculty: { select: { id: true, name: true } },
+      examPackage: {
+        select: {
+          id: true,
+          name: true,
+          faculty: { select: { id: true, name: true } },
+        },
+      }, // Include package and its faculty info
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -90,40 +112,49 @@ async function getAllExamProgress(filters = {}) {
 }
 
 /**
- * Prepares data for question download by faculty (for mobile app offline sync).
- * This includes all PUBLISHED questions for a faculty and a simple asset manifest.
- * @param {string} facultyId - The ID of the faculty.
- * @returns {Promise<object>} Object containing faculty details, questions, and asset manifest.
+ * Prepares data for question download by exam package (for mobile app offline sync).
+ * This includes all questions for a PUBLISHED exam package and a simple asset manifest.
+ * @param {string} examPackageId - The ID of the exam package.
+ * @returns {Promise<object>} Object containing package details, questions, and asset manifest.
  */
-async function getDownloadDataForFaculty(facultyId) {
-  const faculty = await prisma.faculty.findUnique({
-    where: { id: facultyId },
+async function getDownloadDataForPackage(examPackageId) {
+  // Mengganti nama fungsi
+  const examPackage = await prisma.examPackage.findUnique({
+    where: { id: examPackageId },
     select: {
       id: true,
       name: true,
       description: true,
-      imageUrl: true, // Faculty banner image
+      status: true, // Crucial: Check package status
       questions: {
-        where: { status: "PUBLISHED" },
         select: {
           id: true,
           content: true, // Structured question content (includes imageUrl/audioUrl)
           questionType: true,
-          publishedAt: true,
         },
       },
+      faculty: { select: { imageUrl: true } }, // Mengambil gambar fakultas jika perlu untuk banner
     },
   });
 
-  if (!faculty) {
-    const error = new Error("Faculty not found.");
+  if (!examPackage) {
+    const error = new Error("Paket ujian tidak ditemukan.");
     error.statusCode = 404;
     throw error;
   }
 
+  if (examPackage.status !== "PUBLISHED") {
+    // Hanya izinkan download untuk paket PUBLISHED
+    const error = new Error(
+      "Paket ujian belum diterbitkan dan tidak dapat diunduh."
+    );
+    error.statusCode = 403; // Forbidden
+    throw error;
+  }
+
   const assets = [];
-  faculty.questions.forEach((question) => {
-    // Collect asset paths/Base64 from question content if they exist
+  // Extract assets from questions
+  examPackage.questions.forEach((question) => {
     if (question.content && typeof question.content === "object") {
       if (question.content.imageUrl) {
         assets.push({
@@ -142,31 +173,32 @@ async function getDownloadDataForFaculty(facultyId) {
     }
   });
 
-  // Add faculty image to assets
-  if (faculty.imageUrl) {
+  // Tambahkan gambar fakultas ke assets jika ada
+  if (examPackage.faculty && examPackage.faculty.imageUrl) {
     assets.push({
-      id: `faculty_img_${faculty.id}`,
+      id: `faculty_img_${examPackage.faculty.id}`,
       type: "image",
-      data: faculty.imageUrl,
+      data: examPackage.faculty.imageUrl,
     });
   }
 
   // Return data for Flutter
   return {
-    faculty: {
-      id: faculty.id,
-      name: faculty.name,
-      description: faculty.description,
-      imageUrl: faculty.imageUrl, // Send directly for Flutter to use
+    examPackage: {
+      id: examPackage.id,
+      name: examPackage.name,
+      description: examPackage.description,
+      // Perhatikan: imageUrl paket mungkin dari fakultas terkait
+      facultyImageUrl: examPackage.faculty?.imageUrl || null,
     },
-    questions: faculty.questions.map((q) => ({
+    questions: examPackage.questions.map((q) => ({
       id: q.id,
       content: q.content,
       questionType: q.questionType,
-      publishedAt: q.publishedAt,
+      // Tidak ada publishedAt di soal lagi
     })),
     assetManifest: assets, // List of assets for Flutter to download/cache
-    totalQuestions: faculty.questions.length,
+    totalQuestions: examPackage.questions.length,
   };
 }
 
@@ -174,5 +206,5 @@ module.exports = {
   saveExamProgress,
   getExamProgress,
   getAllExamProgress,
-  getDownloadDataForFaculty,
+  getDownloadDataForPackage, // Ekspor dengan nama baru
 };

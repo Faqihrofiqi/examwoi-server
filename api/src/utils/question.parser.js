@@ -19,12 +19,12 @@
  */
 function parseRawQuestion(rawText) {
   if (!rawText || rawText.trim() === '') {
-    throw new Error('Raw text cannot be empty.');
+    throw new Error('Teks soal tidak boleh kosong.');
   }
 
   const lines = rawText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   if (lines.length === 0) {
-    throw new Error('No content found in raw text.');
+    throw new Error('Tidak ada konten ditemukan di teks soal.');
   }
 
   let questionText = '';
@@ -32,25 +32,23 @@ function parseRawQuestion(rawText) {
   let correctOptionId = null;
   let imageUrl = null;
   let audioUrl = null;
-  let questionType = 'TEXT'; // Default type
+  let questionType = 'TEXT';
 
-  // Tambahkan flag untuk melacak apakah pertanyaan sudah ditemukan
-  let questionTextFound = false;
+  let foundQuestionText = false; // Flag untuk memastikan hanya ada satu pertanyaan per blok
 
   for (const line of lines) {
     if (line.startsWith('#')) {
-      if (questionTextFound) {
-        // Ini adalah error yang ingin kita hindari untuk parser tunggal
-        throw new Error('Multiple question texts (lines starting with #) found within a single question block. Please use only one # per question.');
+      if (foundQuestionText) {
+        throw new Error('Ditemukan lebih dari satu teks pertanyaan (dimulai dengan #) dalam satu blok soal. Harap gunakan hanya satu # per soal.');
       }
       questionText = line.substring(1).trim();
-      questionTextFound = true;
+      foundQuestionText = true;
     } else if (line.startsWith('--')) {
-      const optionId = String.fromCharCode(97 + options.length); // 'a'=97, 'b'=98, etc. for lowercase IDs
+      const optionId = String.fromCharCode(97 + options.length);
       options.push({ id: optionId, text: line.substring(2).trim() });
     } else if (line.startsWith('@')) {
       if (correctOptionId) {
-        throw new Error('Multiple correct options (lines starting with @) found within a single question block. Please use only one @ per question.');
+        throw new Error('Ditemukan lebih dari satu jawaban benar (dimulai dengan @) dalam satu blok soal. Harap gunakan hanya satu @ per soal.');
       }
       correctOptionId = line.substring(1).trim().toLowerCase();
     } else if (line.startsWith('[IMG:')) {
@@ -63,17 +61,16 @@ function parseRawQuestion(rawText) {
   }
 
   if (!questionText) {
-    throw new Error('Question text (starting with #) is missing.');
+    throw new Error('Teks pertanyaan (dimulai dengan #) tidak ditemukan.');
   }
   if (options.length === 0) {
-    throw new Error('Options (starting with --) are missing.');
+    throw new Error('Opsi jawaban (dimulai dengan --) tidak ditemukan.');
   }
   if (!correctOptionId) {
-    throw new Error('Correct option (starting with @) is missing.');
+    throw new Error('Jawaban benar (dimulai dengan @) tidak ditemukan.');
   }
-
   if (!options.some(opt => opt.id === correctOptionId)) {
-    throw new Error(`Correct option ID '${correctOptionId}' does not match any provided options.`);
+    throw new Error(`ID jawaban benar '${correctOptionId}' tidak cocok dengan opsi yang tersedia.`);
   }
 
   return {
@@ -85,46 +82,47 @@ function parseRawQuestion(rawText) {
     questionType
   };
 }
+
 /**
- * Parses raw text content containing multiple questions.
- * Each question block should effectively start with '#' on a new line.
- * @param {string} batchRawText - The raw text content of multiple questions.
- * @returns {Array<object>} An array of structured JSON objects, each representing a question.
- * @throws {Error} If any individual question block is malformed.
- */
+* Parses raw text content containing multiple questions.
+* Each question block should effectively start with '#' on a new line.
+* @param {string} batchRawText - The raw text content of multiple questions.
+* @returns {Array<{content: object, rawText: string}>} An array of objects, each with parsed content and original raw text block.
+* @throws {Error} If any individual question block is malformed.
+*/
 function parseRawQuestionsBatch(batchRawText) {
   if (!batchRawText || batchRawText.trim() === '') {
     throw new Error('Teks batch tidak boleh kosong.');
   }
 
-  // Normalisasi semua jenis newline ke \n dan hapus whitespace berlebih
+  // Normalisasi semua jenis newline ke \n dan hapus whitespace berlebih dari seluruh input
   let cleanedText = batchRawText.replace(/\r\n|\r/g, '\n').trim();
 
-  // Pastikan blok pertama juga dimulai dengan '#' jika belum
-  if (!cleanedText.startsWith('#')) {
-    // Ini mungkin menunjukkan masalah format, tapi kita coba tambahkan agar parser bisa bekerja
-    // Atau, user harus memastikan block pertama juga dimulai dengan #
-    // Untuk sekarang, kita bisa asumsikan input selalu dimulai dengan # jika dimaksudkan sebagai soal.
+  // Strategy: Split by a newline followed by a '#'
+  // This assumes each new question block starts with '#'.
+  // `\n#` is the delimiter. `split()` will remove the delimiter.
+  // We then re-add '#' to the beginning of each block.
+  let blocks = cleanedText.split(/\n#/).map(block => block.trim());
+
+  // If the first block doesn't start with '#' (meaning the original text started with '#'),
+  // we need to prepend '#' to the first block.
+  // If the original text started with something else, it's an error.
+  if (!blocks[0].startsWith('#') && blocks[0].length > 0) {
+    blocks[0] = `#${blocks[0]}`;
   }
 
-  // Split based on a newline followed by '#' (and optional whitespace in between).
-  // This regex ensures we split each question block, while keeping the leading '#'.
-  // `\n` : matches a newline
-  // `\s*` : matches any whitespace characters (including newlines) zero or more times
-  // `(?=#)` : positive lookahead to split right before a '#' character
-  const questionBlocks = cleanedText
-    .split(/\n\s*(?=#)/)
-    .filter(block => block.trim().length > 0);
+  // Filter out any empty blocks that might result from splitting
+  const questionBlocks = blocks.filter(block => block.length > 0);
 
-  // Jika setelah split masih tidak ada blok yang dimulai dengan #,
-  // atau jika inputnya memang hanya satu soal tanpa delimiter tambahan,
-  // coba parse seluruhnya sebagai soal tunggal.
-  if (questionBlocks.length === 0 || (questionBlocks.length === 1 && !questionBlocks[0].trim().startsWith('#'))) {
+  if (questionBlocks.length === 0) {
+    // Fallback: If no '#' delimiters were found, try parsing the whole text as a single question.
+    // This handles cases where user pastes a single question into batch mode.
     try {
       const singleParsed = parseRawQuestion(cleanedText);
-      return [singleParsed];
+      // Return with original cleanedText as rawText for the single block
+      return [{ content: singleParsed, rawText: cleanedText }];
     } catch (singleError) {
-      // Jika bahkan sebagai single pun gagal, lempar error asli yang lebih informatif
+      // If even as a single question it fails, then it's genuinely malformed input.
       throw new Error(`Tidak ada blok soal yang valid ditemukan. Pastikan setiap soal dimulai dengan '#' dan dipisahkan dengan benar. Detail error pada parsing tunggal: ${singleError.message}`);
     }
   }
@@ -132,25 +130,15 @@ function parseRawQuestionsBatch(batchRawText) {
   const parsedQuestions = [];
   for (const [index, block] of questionBlocks.entries()) {
     try {
-      let currentBlock = block.trim();
-      // Jika block tidak dimulai dengan '#', dan ini bukan block pertama,
-      // atau jika block pertama tidak dimulai dengan '#', ini adalah masalah format.
-      // Kita harus memastikan setiap blok valid.
-      if (!currentBlock.startsWith('#') && index === 0) {
-        // Ini kasus jika rawText tidak dimulai dengan #, tapi ada soal di dalamnya
-        throw new Error('Blok soal pertama harus dimulai dengan #.');
+      // Ensure each block starts with '#' (after split, it should, but double check for robustness)
+      if (!block.startsWith('#')) {
+        throw new Error(`Blok soal ke-${index + 1} tidak dimulai dengan '#'. Pastikan setiap soal diawali dengan '#'.`);
       }
-      if (!currentBlock.startsWith('#') && index > 0) {
-        // Ini kasus jika ada pemisahan aneh, atau delimiter yang tidak valid
-        throw new Error(`Blok soal ke-${index + 1} tidak dimulai dengan '#'. Pastikan format setiap soal benar.`);
-      }
-
-      const parsed = parseRawQuestion(currentBlock); // Gunakan parser soal tunggal
-      parsedQuestions.push(parsed);
+      const parsedContent = parseRawQuestion(block); // Gunakan parser soal tunggal
+      parsedQuestions.push({ content: parsedContent, rawText: block }); // <-- Simpan rawText asli blok ini
     } catch (error) {
-      // Re-throw dengan lebih banyak konteks
       const err = new Error(`Error pada blok soal ke-${index + 1}: ${error.message}`);
-      err.statusCode = 400; // Bad Request
+      err.statusCode = 400;
       throw err;
     }
   }
@@ -159,5 +147,5 @@ function parseRawQuestionsBatch(batchRawText) {
 
 module.exports = {
   parseRawQuestion,
-  parseRawQuestionsBatch 
+  parseRawQuestionsBatch
 };

@@ -1,65 +1,80 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL; // Sesuaikan dengan URL backend Anda
+import apiClient from '../api/axiosConfig';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState(''); // 'success' or 'danger'
+    const [loading, setLoading] = useState(false); // State untuk loading
     const navigate = useNavigate();
 
-    // --- Objek Gaya CSS untuk Komponen ---
-    // Gaya untuk wadah utama yang memenuhi layar
+    // --- Objek Gaya CSS yang Disesuaikan ---
     const loginPageStyle = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f0f2f5', // Latar belakang abu-abu lembut
-        padding: '1rem' // Padding untuk keamanan di layar kecil
+        backgroundColor: '#f0f2f5',
+        padding: '1rem',
+        fontFamily: "'Poppins', sans-serif" // Font lebih modern
     };
 
-    // Gaya untuk kartu login
     const cardLoginStyle = {
         width: '100%',
-        maxWidth: '420px', // Lebar maksimum kartu
-        padding: '2rem', // Padding di dalam kartu
-        borderRadius: '10px', // Sudut lebih tumpul
-        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)', // Bayangan halus
-        border: 'none' // Hapus border default
+        maxWidth: '420px',
+        padding: '2.5rem',
+        borderRadius: '12px',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.1)',
+        border: 'none',
     };
 
-    // Gaya untuk grup input
-    const inputGroupStyle = {
-        marginBottom: '1.5rem' // Jarak antar input field
+    // BARU: Gaya untuk pembungkus input (menggantikan inputGroupStyle)
+    const inputWrapperStyle = {
+        position: 'relative', // Penting untuk posisi ikon
+        marginBottom: '1.75rem'
     };
 
-    // Gaya untuk tombol login
+    // BARU: Gaya untuk ikon di dalam input
+    const inputIconStyle = {
+        position: 'absolute',
+        left: '15px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: '#adb5bd' // Warna ikon lebih soft
+    };
+
+    // BARU: Gaya untuk input field itu sendiri
+    const inputFieldStyle = {
+        paddingLeft: '45px', // KUNCI UTAMA: Beri ruang untuk ikon di kiri
+        height: '50px', // Tinggi input field yang konsisten
+        borderRadius: '8px' // Sudut lebih modern
+    };
+
     const buttonStyle = {
-        width: '100%', // Tombol memenuhi lebar kartu
+        width: '100%',
         fontWeight: 'bold',
         fontSize: '1rem',
-        padding: '0.75rem'
+        padding: '12px',
+        borderRadius: '8px', // Samakan dengan input
     };
 
-    // Gaya untuk area link
     const linkContainerStyle = {
-        marginTop: '1.5rem' // Jarak dari tombol ke link
+        marginTop: '1.5rem'
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setMessage('');
+        setLoading(true); // Mulai loading
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+            const response = await apiClient.post('/auth/login', {
                 email,
                 password,
-            });
-
+              });
+        
             if (response.status === 200) {
                 const { accessToken, refreshToken, user } = response.data;
                 localStorage.setItem('accessToken', accessToken);
@@ -67,80 +82,77 @@ const LoginPage = () => {
                 localStorage.setItem('userRole', user.role);
                 setMessage('Login berhasil! Mengarahkan ke dashboard...');
                 setMessageType('success');
-                navigate('/admin/', { replace: true });
+                navigate('/admin', { replace: true });
             }
         } catch (error) {
-            const errorMessage = error.response?.data?.message ||
-                error.response?.data?.errors?.[0]?.msg ||
-                'Terjadi kesalahan tak terduga saat login.';
+            const errorMessage = error.response?.data?.message || 'Email atau password salah.';
             setMessage(errorMessage);
             setMessageType('danger');
+        } finally {
+            setLoading(false); // Selesai loading
         }
     };
 
     const Alert = ({ msg, type }) => {
         if (!msg) return null;
         return (
-            <div className={`alert alert-${type} alert-dismissible fade show`} role="alert">
+            <div className={`alert alert-${type} text-center`}>
                 {msg}
-                <button type="button" className="close" data-dismiss="alert" aria-label="Close" onClick={() => setMessage('')}>
-                    <span aria-hidden="true">&times;</span>
-                </button>
             </div>
         );
     };
 
     return (
-        // Menerapkan gaya ke wadah utama
         <div style={loginPageStyle}>
-            {/* Menerapkan gaya ke kartu login */}
             <div className="card" style={cardLoginStyle}>
-                <div className="card-header text-center bg-transparent border-0 pt-3 pb-2">
-                    <h4 className="card-title" style={{ fontWeight: 'bold', color: '#333' }}>Login Admin</h4>
+                <div className="card-header text-center bg-transparent border-0 pt-2 pb-3">
+                    <h3 className="card-title" style={{ fontWeight: '700', color: '#333' }}>Selamat Datang!</h3>
+                    <p className="text-muted mb-0">Login ke Akun Admin Anda</p>
                 </div>
                 <div className="card-body">
                     <Alert msg={message} type={messageType} />
                     <form onSubmit={handleSubmit} noValidate>
-                        <div className="input-group" style={inputGroupStyle}>
-                            <div className="input-group-prepend">
-                                <span className="input-group-text bg-transparent border-right-0">
-                                    <i className="material-icons">email</i>
-                                </span>
-                            </div>
+
+                        {/* --- STRUKTUR INPUT BARU UNTUK EMAIL --- */}
+                        <div style={inputWrapperStyle}>
+                            <i className="material-icons" style={inputIconStyle}>email</i>
                             <input
                                 type="email"
-                                className="form-control border-left-0"
-                                placeholder="Email..."
+                                className="form-control"
+                                style={inputFieldStyle} // Terapkan gaya baru
+                                placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={loading}
                             />
                         </div>
-                        <div className="input-group" style={inputGroupStyle}>
-                            <div className="input-group-prepend">
-                                <span className="input-group-text bg-transparent border-right-0">
-                                    <i className="material-icons">lock_outline</i>
-                                </span>
-                            </div>
+
+                        {/* --- STRUKTUR INPUT BARU UNTUK PASSWORD --- */}
+                        <div style={inputWrapperStyle}>
+                            <i className="material-icons" style={inputIconStyle}>lock_outline</i>
                             <input
                                 type="password"
-                                className="form-control border-left-0"
-                                placeholder="Password..."
+                                className="form-control"
+                                style={inputFieldStyle} // Terapkan gaya baru
+                                placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={loading}
                             />
                         </div>
+
                         <div className="card-footer bg-transparent border-0 text-center p-0 mt-4">
-                            <button type="submit" className="btn btn-primary btn-lg" style={buttonStyle}>
-                                Login
+                            <button type="submit" className="btn btn-primary btn-lg" style={buttonStyle} disabled={loading}>
+                                {loading ? 'Memproses...' : 'Login'}
                             </button>
                             <div style={linkContainerStyle}>
                                 <p className="description text-center mb-1">
                                     Belum punya akun? <Link to="/admin/register">Daftar di sini</Link>
                                 </p>
                                 <p className="description text-center">
-                                    <Link to="/admin/reset-password">Lupa Password?</Link>
+                                    <Link to="/admin/forgot-password">Lupa Password?</Link>
                                 </p>
                             </div>
                         </div>

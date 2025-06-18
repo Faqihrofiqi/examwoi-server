@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -34,15 +31,15 @@ model User {
   profileImageUrl String? // Untuk menyimpan Base64 gambar profil
   refreshToken    String? // Untuk menyimpan refresh token
 
-  // --- Relasi ke Fakultas ---
+  // --- Relasi ke Fakultas (opsional, jika user punya default faculty) ---
   facultyId String?
   faculty   Faculty? @relation(fields: [facultyId], references: [id])
 
   // --- Relasi ke Progres Ujian ---
   examProgress   ExamProgress[]
-  otpRequestLogs OtpRequestLog[] 
-  createdAt       DateTime       @default(now()) 
-  updatedAt       DateTime       @updatedAt   
+  otpRequestLogs OtpRequestLog[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Faculty {
@@ -50,46 +47,83 @@ model Faculty {
   name         String         @unique
   description  String?
   imageUrl     String? // Untuk menyimpan Base64 gambar fakultas (home screen)
-  questions    Question[] // Soal terhubung langsung ke Fakultas
-  users        User[] // Relasi balik ke User (opsional, jika ingin melihat user per fakultas)
-  ExamProgress ExamProgress[]
+  users        User[] // Relasi balik ke User
+  ExamPackage  ExamPackage[] // Paket ujian di fakultas ini
 }
 
 model Question {
-  id           String    @id @default(uuid())
-  content      Json // Format terstruktur soal (teks, opsi, gambar/audio path/base64)
-  rawText      String? // Format raw untuk editing di admin
-  status       Status    @default(DRAFT) // DRAFT, PUBLISHED, ARCHIVED
-  faculty      Faculty   @relation(fields: [facultyId], references: [id])
-  facultyId    String
-  createdAt    DateTime  @default(now())
-  publishedAt  DateTime?
-  questionType String? // "TEXT", "IMAGE", "AUDIO" (opsional, bisa dari `content` Json)
+  id      String  @id @default(uuid())
+  content Json // Format terstruktur soal (teks, opsi, gambar/audio path/base64)
+  rawText String? // Format raw untuk editing di admin
+  // status    Status   @default(DRAFT)     // <-- DIHAPUS
+  // publishedAt DateTime? // <-- DIHAPUS
+
+  // Relasi ke ExamPackage (Soal sekarang milik sebuah Paket)
+  examPackage   ExamPackage @relation(fields: [examPackageId], references: [id])
+  examPackageId String
+
+  createdAt    DateTime @default(now())
+  questionType String? // "TEXT", "IMAGE", "AUDIO"
+  // Faculty      Faculty? @relation(fields: [facultyId], references: [id]) // <-- DIHAPUS
+  // facultyId    String? // <-- DIHAPUS
 }
 
 model ExamProgress {
-  id                 String    @id @default(uuid())
-  userId             String
-  user               User      @relation(fields: [userId], references: [id])
-  facultyId          String
-  faculty            Faculty   @relation(fields: [facultyId], references: [id])
-  currentQuestionId  String? // ID soal yang sedang dikerjakan
-  completedQuestions Json? // { questionId: "ans_id", isCorrect: true, timeTaken: 30 }
-  score              Int? // Skor akhir ujian
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  examPackageId String // Terhubung ke ExamPackage
+  examPackage   ExamPackage @relation(fields: [examPackageId], references: [id])
+
+  currentQuestionId  String?
+  completedQuestions Json?
+  score              Int?
   startedAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt // Otomatis update saat record berubah
+  updatedAt          DateTime  @updatedAt
   completedAt        DateTime?
-  status             String    @default("IN_PROGRESS") // "IN_PROGRESS", "COMPLETED", "PAUSED"
+  status             String    @default("IN_PROGRESS") // Status progres ujian (bukan status soal)
+  // Faculty            Faculty?  @relation(fields: [facultyId], references: [id]) // <-- DIHAPUS
+  // facultyId          String? // <-- DIHAPUS
 }
 
 // Model untuk melacak permintaan OTP (email) untuk rate limiting
 model OtpRequestLog {
   id         String   @id @default(uuid())
   identifier String // Email
-  type       String   @default("EMAIL_OTP") // Hanya EMAIL_OTP sekarang
-  userId     String? // Opsional, jika kita bisa mengaitkan dengan user yang sudah ada
+  type       String   @default("EMAIL_OTP")
+  userId     String?
   user       User?    @relation(fields: [userId], references: [id])
   createdAt  DateTime @default(now())
+}
+
+model ExamPackage {
+  id             String         @id @default(uuid())
+  name           String         @unique
+  description    String?
+  faculty        Faculty        @relation(fields: [facultyId], references: [id])
+  facultyId      String
+  status         PackageStatus  @default(DRAFT) // Status paket: DRAFT, PUBLISHED, ARCHIVED
+  publishedAt    DateTime? // Waktu paket dipublikasikan
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  questions      Question[] // Relasi ke soal-soal dalam paket ini
+  examProgresses ExamProgress[] // Relasi ke progres ujian siswa untuk paket ini
+
+  durationMinutes Int?
+  totalQuestions  Int?
+}
+
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Status { // <-- Enum Status ini tetap ada untuk digunakan di ExamProgress atau AppConfig jika perlu, tapi tidak di Question
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 enum Role {
@@ -98,18 +132,12 @@ enum Role {
   STUDENT
 }
 
-enum Status {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
 model AppConfig {
-  id              String   @id @default(uuid())
-  key             String   @unique // Unique key for the setting (e.g., "PRIVACY_POLICY", "APP_NAME", "BANNER_IMAGE_URL", "BACKGROUND_IMAGE_URL")
-  value           String   // The actual content/URL/name
-  description     String?  // Optional description for admin panel
-  type            String   @default("TEXT") // e.g., "TEXT", "IMAGE_URL", "COLOR"
-  updatedAt       DateTime @updatedAt
-  createdAt       DateTime @default(now())
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  type        String   @default("TEXT")
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 }

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-
-const API_BASE_URL = 'process.env.REACT_APP_API_BASE_URL'; // Sesuaikan dengan URL backend Anda
+import API_CONFIG from '../api/apiConfig';
+import apiClient from '../api/axiosConfig';
 
 const RegisterPage = () => {
     const [email, setEmail] = useState('');
@@ -52,7 +51,9 @@ const RegisterPage = () => {
         setMessage('');
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+            // MENGGUNAKAN apiClient.post, bukan axios.post
+            // URL-nya hanya endpoint-nya saja, karena baseURL sudah ada di apiClient
+            const response = await apiClient.post('/auth/register', {
                 email,
                 password,
                 username,
@@ -68,6 +69,9 @@ const RegisterPage = () => {
                 }, 2000);
             }
         } catch (error) {
+            // Blok 'catch' ini tetap penting untuk menangani error spesifik dari endpoint ini,
+            // seperti error validasi (400 Bad Request) atau lainnya.
+            // Error 401/403 akan ditangani oleh interceptor, tetapi error lain akan ditangkap di sini.
             const errorMessage = error.response?.data?.message ||
                 error.response?.data?.errors?.[0]?.msg ||
                 'Terjadi kesalahan tak terduga saat registrasi.';
@@ -75,7 +79,7 @@ const RegisterPage = () => {
             setMessageType('danger');
         }
     };
-
+    
     const Alert = ({ msg, type }) => {
         if (!msg) return null;
         return (

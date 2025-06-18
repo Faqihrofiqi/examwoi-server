@@ -59,7 +59,6 @@ const DataUserPage = () => {
     getUsers();
   }, [getUsers]);
 
-  // ... (Fungsi calculateAge, handleDeleteUser, handleEditUser tetap sama)
   const calculateAge = (dateOfBirth) => {
     if (!dateOfBirth) return '-';
     const birthDate = new Date(dateOfBirth);

@@ -254,7 +254,6 @@ textarea.form-control {
   color: white;
 }
 
-
 /* Penempatan tombol aksi */
 .action-buttons {
   display: flex;
@@ -278,7 +277,23 @@ textarea.form-control {
   color: var(--danger-color);
   font-weight: bold;
 }
+.document-menu-container .action-buttons .btn.btn-success,
+.document-menu-container .action-buttons .btn.btn-warning {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+  /* Pastikan display-nya benar */
+  pointer-events: auto !important;
+  /* Pastikan bisa diklik */
+}
 
+/* Jika tombol "Edit" utama juga punya masalah visibilitas di luar hover */
+.document-menu-container .action-buttons .btn.btn-primary {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+  pointer-events: auto !important;
+}
 /* --- Media Queries untuk Responsivitas --- */
 
 /* Untuk layar yang lebih kecil dari 768px (tablet dan mobile) */

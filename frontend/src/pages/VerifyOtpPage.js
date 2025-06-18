@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-
-const API_BASE_URL = 'process.env.REACT_APP_API_BASE_URL'; // Nanti akan kita ubah dengan dotenv
+import apiClient from '../api/axiosConfig';
 
 const VerifyOtpPage = () => {
     const location = useLocation();
@@ -51,19 +49,23 @@ const VerifyOtpPage = () => {
         setMessage('');
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/auth/verify`, { email, otp });
+            // Ganti axios.post dengan apiClient.post dan sederhanakan URL
+            const response = await apiClient.post('/auth/verify', { email, otp });
+
             if (response.status === 200) {
                 setMessage('Verifikasi berhasil! Anda akan diarahkan ke halaman login.');
                 setMessageType('success');
                 setTimeout(() => navigate('/admin/login'), 2500);
             }
         } catch (error) {
+            // Blok catch ini tetap dipertahankan untuk menangani pesan error spesifik,
+            // misalnya jika OTP yang dimasukkan salah atau sudah kedaluwarsa.
             const errorMessage = error.response?.data?.message || 'Terjadi kesalahan saat verifikasi OTP.';
             setMessage(errorMessage);
             setMessageType('danger');
         }
     };
-
+    
     const Alert = ({ msg, type }) => {
         if (!msg) return null;
         return (

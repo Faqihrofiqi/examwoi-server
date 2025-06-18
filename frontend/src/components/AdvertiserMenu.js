@@ -1,6 +1,6 @@
 // AdvertiserMenu.js
 import React, { useState, useEffect } from 'react';
-import '../styles/main.css';
+
 function AdvertiserMenu() {
   const initialContentState = { text: '', imageUrl: '' };
 

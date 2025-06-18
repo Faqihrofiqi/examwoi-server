@@ -250,16 +250,4 @@ router.get(
   })
 );
 
-// GET /auth/admin-dashboard (Contoh rute yang dilindungi dengan otorisasi)
-router.get(
-  "/admin-dashboard",
-  authenticate,
-  authorize(["ADMIN"]),
-  (req, res) => {
-    res.status(200).json({
-      message: `Welcome, ${req.user.email}! This is the admin dashboard.`,
-    });
-  }
-);
-
 module.exports = router;

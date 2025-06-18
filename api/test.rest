@@ -1,47 +1,71 @@
-@accessToken1=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ0MDE1NWM3LWI5MTctNDZjOC1hMWJlLTUwNTQyNGYyZjcwYiIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc0OTQwOTE3NCwiZXhwIjoxNzQ5NDEyNzc0fQ.AKkFFkNf-Z9Jr0Ko8z6uylqMAGRMBRpXt_K-Y1pRbLc
-
-GET http://localhost:3000/v1/app-configs
-Authorization: Bearer {{accessToken1}}
-
-
-### AUTHENTICATION MODULE
+### GLOBAL VARIABLES
 
 @baseUrl = http://localhost:3000/v1
+@adminEmail = admin@examwoi.com
+@adminPassword = admin123
+@teacherEmail = teacher@examwoi.com
+@teacherPassword = teacher123
+@studentEmail = student@examwoi.com
+@studentPassword = student123
+
+@API_KEY = basksokontolbaksokontolbaksokontol
+
+@adminAccessToken = 
+@adminRefreshToken = 
+@teacherAccessToken = 
+@studentAccessToken = 
+
+@fkipFacultyId = 
+@fteknikFacultyId = 
+@fkedokteranFacultyId = 
+@fkomputerFacultyId = 
+
+@fkipPackageId = 
+@fteknikPackageId = 
+@fkedokteranPackageId = 
+@fkomputerPackageId = 
+
+@sampleQuestionId = 
+
+### AUTHENTICATION MODULE
 
 ### 1. Register User (POST /v1/auth/register)
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
+X-API-Key: {{API_KEY}}
 
 {
-  "email": "cocotmu98@gmail.com",
-  "password": "password123",
-  "username": "Test User",
-  "phone": "0812345622290",
-  "dateOfBirth": "2000-01-01",
-  "kabupaten": "Purwokerto",
-  "profinsi": "Jawa Tengah"
+  "email": "newuser@example.com",
+  "password": "newpassword123",
+  "username": "New Registered User",
+  "phone": "081234567899",
+  "dateOfBirth": "2001-03-15",
+  "kabupaten": "Jakarta",
+  "profinsi": "DKI Jakarta"
 }
 
 ### 2. Verify OTP (POST /v1/auth/verify) - Use OTP from email
 POST {{baseUrl}}/auth/verify
 Content-Type: application/json
+X-API-Key: {{API_KEY}}
 
 {
-  "email": "cocotmu98@gmail.com",
-  "otp": "202197" 
+  "email": "newuser@example.com",
+  "otp": "KODE_OTP_ANDA"
 }
 
 ### 3. Login User (POST /v1/auth/login)
-@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1NGFhZWM0LTM3NDgtNDExMy1iNjgxLTQ3MDc2ZmFmZWE1ZSIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzQ5NDA1MDI2LCJleHAiOjE3NDk0MDg2MjZ9.oN6wdaeWVAapG8EPHgSqCvCn9pDd_qpmmWVXrKGW6DI
-@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1NGFhZWM0LTM3NDgtNDExMy1iNjgxLTQ3MDc2ZmFmZWE1ZSIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzQ5NDA1MDI2LCJleHAiOjE3NTE5OTcwMjZ9.t2-M-fLEox-hJstQSsYRy0BTgKRZGMvOLx_vTKGO30k
-@userRole =STUDENT
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhjZjQ3ZDdjLThmMzYtNGViZS04MDU4LThlYmUwMzFiZGY0OSIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAyNTc5MzMsImV4cCI6MTc1MDI2MTUzM30.jXPBi2_CZo_n4I1zw2TCXbphQ83Qvqrx5eSXsPGnODw
+@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhjZjQ3ZDdjLThmMzYtNGViZS04MDU4LThlYmUwMzFiZGY0OSIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAyNTc4NDksImV4cCI6MTc1Mjg0OTg0OX0.ayZt62G7f2VaBdvkg5ejFSyP4u6H8ShY-hMqxnmwK3c
+@userRole =ADMIN
 
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
+X-API-Key: {{API_KEY}}
 
 {
-  "email": "cocotmu98@gmail.com",
-  "password": "password123"
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
 }
 
 ### Save Login Tokens
@@ -52,50 +76,57 @@ Content-Type: application/json
 ### 4. Forgot Password (POST /v1/auth/forgot-password)
 POST {{baseUrl}}/auth/forgot-password
 Content-Type: application/json
+X-API-Key: {{API_KEY}}
 
 {
-  "email": "cocotmu98@gmail.com"
+  "email": "{{adminEmail}}"
 }
 
 ### 5. Reset Password (POST /v1/auth/reset-password) - Use OTP from email
 POST {{baseUrl}}/auth/reset-password
 Content-Type: application/json
+X-API-Key: {{API_KEY}}
 
 {
-  "email": "cocotmu98@gmail.com",
-  "newPassword": "newpassword123",
-  "otp": "766323"
+  "email": "{{adminEmail}}",
+  "newPassword": "newadminpassword123",
+  "otp": "KODE_OTP_DARI_EMAIL_RESET" 
 }
 
 ### 6. Refresh Token (POST /v1/auth/refresh-token)
 POST {{baseUrl}}/auth/refresh-token
 Content-Type: application/json
+X-API-Key: {{API_KEY}}
 
 {
   "refreshToken": "{{refreshToken}}"
 }
 
-### 7. Get Profile (GET /v1/auth/profile) - Requires Access Token
-GET {{baseUrl}}/auth/profile
+### 7. Get Profile (GET /v1/auth/me) - Requires Access Token
+GET {{baseUrl}}/auth/me
 Authorization: Bearer {{accessToken}}
+X-API-Key: {{API_KEY}}
 
-
-### 8. Admin Dashboard (GET /v1/auth/admin-dashboard) - Requires ADMIN Role
-GET {{baseUrl}}/auth/admin-dashboard
-Authorization: Bearer {{accessToken}}
 
 
 ### FACULTY MANAGEMENT MODULE
 
-@facultyId =60b0b4d2-9508-4bd9-9499-e763440c6619
-
-### 1. Get All Faculties (GET /v1/faculties)
+### 1. Get All Faculties (GET /v1/faculties) - Public (no auth)
 GET {{baseUrl}}/faculties
+X-API-Key: {{API_KEY}}
+
+### Save Faculty IDs (manually copy from response or use @set)
+# @set fkipFacultyId = YOUR_FKIP_FACULTY_ID_HERE
+# @set fteknikFacultyId = YOUR_FTEKNIK_FACULTY_ID_HERE
+# @set fkedokteranFacultyId = YOUR_FKEDOKTERAN_FACULTY_ID_HERE
+# @set fkomputerFacultyId = YOUR_FKOMPUTER_FACULTY_ID_HERE
+
 
 ### 2. Create Faculty (POST /v1/faculties) - Requires ADMIN Role
 POST {{baseUrl}}/faculties
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+X-API-Key: {{API_KEY}}
 
 {
   "name": "Fakultas Desain Interaktif",
@@ -106,132 +137,191 @@ Authorization: Bearer {{accessToken}}
 ### Save Faculty ID
 # @set facultyId = {{res.body.data.id}}
 
-### 3. Get Faculty by ID (GET /v1/faculties/:id)
-GET {{baseUrl}}/faculties/{{facultyId}}
+### 3. Get Faculty by ID (GET /v1/faculties/:id) - Public (no auth)
+GET {{baseUrl}}/faculties/{{{{fkedokteranPackageId}}}}
+X-API-Key: {{API_KEY}}
 
 ### 4. Update Faculty (PUT /v1/faculties/:id) - Requires ADMIN Role
-PUT {{baseUrl}}/faculties/{{facultyId}}
+PUT {{baseUrl}}/faculties/{{{{fkedokteranFacultyId}}}}
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+X-API-Key: {{API_KEY}}
 
 {
   "description": "Fakultas yang sangat keren dan inovatif."
 }
 
 ### 5. Delete Faculty (DELETE /v1/faculties/:id) - Requires ADMIN Role
-DELETE {{baseUrl}}/faculties/{{facultyId}}
+DELETE {{baseUrl}}/faculties/{{{{fkedokteranFacultyId}}}}
 Authorization: Bearer {{accessToken}}
+X-API-Key: {{API_KEY}}
 
 
-@
-### QUESTION MANAGEMENT MODULE
+---
+### EXAM PACKAGE MANAGEMENT MODULE
 
-@questionId =d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
-@fkipFacultyId=4efa77d5-890c-496f-ac84-cdd5dde0adf1
-
-### 0. Get All Faculties (GET /v1/faculties) - For Previewing Faculty IDs
-GET {{baseUrl}}/faculties
-
-###
-GET {{baseUrl}}/questions
-
-### 1. Preview Question from Raw Text (POST /v1/questions/preview)
-POST {{baseUrl}}/questions/preview
+### 1. Create Exam Package (POST /v1/exam-packages) - ADMIN/TEACHER Only (DRAFT by default)
+POST {{baseUrl}}/exam-packages
 Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
 
 {
-  "rawText": "# Apa hewan yang paling besar di darat?\n-- Gajah\n-- Badak\n-- Jerapah\n-- Kuda Nil\n@a"
+  "name": "Simulasi UTBK 2025 - Paket Ilmu Komputer Baru",
+  "description": "Paket soal simulasi untuk calon mahasiswa Ilmu Komputer.",
+  "facultyId": "{{fkomputerFacultyId}}",
+  "durationMinutes": 120,
+  "totalQuestions": 0
 }
 
-### 2. Create Question (Draft) (POST /v1/questions) - Requires ADMIN/TEACHER Role
-POST {{baseUrl}}/questions
+### Save Exam Package ID
+# @set fkomputerPackageId = {{res.body.data.id}}
+
+
+### 2. Get All Exam Packages (GET /v1/exam-packages) - Filter by facultyId or status (Public)
+GET {{baseUrl}}/exam-packages?facultyId={{fkomputerFacultyId}}&status=DRAFT
+X-API-Key: {{API_KEY}}
+
+### 3. Get Exam Package by ID (GET /v1/exam-packages/:id) - Public
+GET {{baseUrl}}/exam-packages/{{fkomputerPackageId}}
+X-API-Key: {{API_KEY}}
+
+### 4. Update Exam Package (PUT /v1/exam-packages/:id) - ADMIN/TEACHER Only
+PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
 
 {
-  "facultyId": "4efa77d5-890c-496f-ac84-cdd5dde0adf1",
-  "rawText": "# Apa ilmu yang mempelajari bintang-bintang?\n-- Biologi\n-- Geologi\n-- Astronomi\n-- Oseanografi\n@c",
+  "description": "Paket soal simulasi UTBK terbaru untuk Ilmu Komputer 2025."
+}
+
+### 5. Update Exam Package Status (PUBLISH) (PUT /v1/exam-packages/:id/status) - ADMIN/TEACHER Only
+# Note: Paket harus punya soal dulu sebelum bisa di-publish. Tambahkan soal di bagian Questions dulu.
+PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
+
+{
+  "status": "PUBLISHED"
+}
+
+### 6. Update Exam Package Status (ARCHIVE) (PUT /v1/exam-packages/:id/status) - ADMIN/TEACHER Only
+# Note: Paket harus sudah PUBLISHED
+PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
+
+{
+  "status": "ARCHIVED"
+}
+
+### 7. Update Exam Package Status (DRAFT from ARCHIVED) (PUT /v1/exam-packages/:id/status) - ADMIN/TEACHER Only
+# Note: Paket harus sudah ARCHIVED
+PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
+
+{
   "status": "DRAFT"
 }
 
-### Save Question ID
-# @set questionId = {{res.body.data.id}}
+### 8. Delete Exam Package (DELETE /v1/exam-packages/:id) - ADMIN/TEACHER Only
+# Note: Ini akan menghapus semua soal dan progres ujian yang terkait dengan paket ini
+DELETE {{baseUrl}}/exam-packages/{{fkomputerPackageId}}
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
 
-### 3. Create Question (Published with Image) (POST /v1/questions) - Requires ADMIN/TEACHER Role
+
+---
+### QUESTION MANAGEMENT MODULE (Updated for Exam Packages)
+
+### 1. Create Question (Single) (POST /v1/questions) - ADMIN/TEACHER Only
+# Assign to the Exam Package created above
 POST {{baseUrl}}/questions
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
 
 {
-  "facultyId": "4efa77d5-890c-496f-ac84-cdd5dde0adf1",
-  "rawText": "# Lihat gambar, apa ini?\n[IMG:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==]\n-- Segitiga\n-- Kotak\n-- Lingkaran\n-- Bintang\n@b",
-  "status": "PUBLISHED"
+  "examPackageId": "{{fkomputerPackageId}}",
+  "rawText": "# Apa kepanjangan dari CPU?\n-- Central Processing Unit\n-- Central Program Unit\n-- Computer Personal Unit\n-- Control Processing Unit\n@a",
+  "isBatch": false
 }
 
+### Save Question ID (for single question creation)
+# @set sampleQuestionId = {{res.body.data.id}}
 
-### 4. Get All Questions (GET /v1/questions)
-GET {{baseUrl}}/questions
-
-### 5. Get Questions by Faculty & Status (GET /v1/questions?facultyId=&status=)
-GET {{baseUrl}}/questions?facultyId=4efa77d5-890c-496f-ac84-cdd5dde0adf1&status=PUBLISHED
-
-
-### 6. Get Question by ID (GET /v1/questions/:id)
-GET {{baseUrl}}/questions/{{questionId}}
-
-### 7. Update Question (PUT /v1/questions/:id) - Requires ADMIN/TEACHER Role
-PUT {{baseUrl}}/questions/{{questionId}}
+### 2. Create Questions (Batch) (POST /v1/questions) - ADMIN/TEACHER Only
+# Assign to the Exam Package created above
+POST {{baseUrl}}/questions
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{teacherAccessToken}}
+X-API-Key: {{API_KEY}}
 
 {
-  "rawText": "# Pertanyaan ini sudah diupdate.\n-- Jawaban A\n-- Jawaban B\n@a",
-  "status": "PUBLISHED"
+  "examPackageId": "{{fkomputerPackageId}}",
+  "rawText": "# Bahasa pemrograman apa yang paling sering digunakan untuk pengembangan web sisi klien (frontend)?\n-- Python\n-- Java\n-- JavaScript\n-- C++\n@c\n\n# Apa nama komponen hardware yang berfungsi sebagai \"otak\" komputer?\n-- RAM\n-- Hard Drive\n-- Motherboard\n-- Processor\n@d",
+  "isBatch": true
 }
 
-### 8. Publish Question (PUT /v1/questions/:id/publish) - Requires ADMIN/TEACHER Role
-PUT {{baseUrl}}/questions/{{questionId}}/publish
-Authorization: Bearer {{accessToken}}
+### 3. Get All Questions for a Package (GET /v1/questions?examPackageId=...) - Public (no auth)
+GET {{baseUrl}}/questions?examPackageId={{fkomputerPackageId}}
+X-API-Key: {{API_KEY}}
+
+### 4. Get Question by ID (GET /v1/questions/:id) - Public (no auth)
+GET {{baseUrl}}/questions/{{sampleQuestionId}}
+X-API-Key: {{API_KEY}}
+
+### 5. Update Question (PUT /v1/questions/:id) - ADMIN/TEACHER Only
+PUT {{baseUrl}}/questions/{{sampleQuestionId}}
+Content-Type: application/json
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
+
+{
+  "rawText": "# Apa kepanjangan dari CPU yang diperbarui?\n-- Central Processing Unit Baru\n-- Central Program Unit Baru\n@a"
+}
+
+### 6. Delete Question (DELETE /v1/questions/:id) - ADMIN/TEACHER Only
+DELETE {{baseUrl}}/questions/{{sampleQuestionId}}
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
 
 
-### 9. Delete Question (DELETE /v1/questions/:id) - Requires ADMIN/TEACHER Role
-DELETE {{baseUrl}}/questions/{{questionId}}
-Authorization: Bearer {{accessToken}}
+---
+### EXAM PROGRESS MODULE (Updated for Exam Packages)
 
-
-@
-### EXAM PROGRESS MODULE
-
-@studentAccessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1NGFhZWM0LTM3NDgtNDExMy1iNjgxLTQ3MDc2ZmFmZWE1ZSIsImVtYWlsIjoiY29jb3RtdTk4QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzQ5NDA1MDI2LCJleHAiOjE3NDk0MDg2MjZ9.oN6wdaeWVAapG8EPHgSqCvCn9pDd_qpmmWVXrKGW6DI
-@fkipFacultyId =4efa77d5-890c-496f-ac84-cdd5dde0adf1
-@sampleQuestionId =9de7f6b2-798d-46ba-9f52-18953e0e5bf2
-
-### 1. Save Exam Progress (POST /v1/exam-progress) - Requires STUDENT Role
+### 1. Save Exam Progress (POST /v1/exam-progress) - STUDENT Only
+# Requires: studentAccessToken, and a PUBLISHED exam package ID
 POST {{baseUrl}}/exam-progress
 Content-Type: application/json
 Authorization: Bearer {{studentAccessToken}}
+X-API-Key: {{API_KEY}}
 
 {
-  "facultyId": "{{fkipFacultyId}}",
-  "currentQuestionId": "{{sampleQuestionId}}",
+  "examPackageId": "{{fkomputerPackageId}}", // ID dari paket yang sudah di-publish
+  "currentQuestionId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13", // Contoh ID soal dari seeder (pastikan ini ada di paket tsb)
   "completedQuestions": {
-    "{{sampleQuestionId}}": {
-      "answer": "a",
-      "isCorrect": true,
-      "timeTaken": 25
-    }
+    "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13": { "answer": "a", "isCorrect": true, "timeTaken": 30 }
   },
-  "score": 80,
-  "status": "IN_PROGRESS"
+  "score": 100,
+  "status": "COMPLETED"
 }
 
-### 2. Get Student's Exam Progress for Faculty (GET /v1/exam-progress/:facultyId) - Requires STUDENT Role
-GET {{baseUrl}}/exam-progress/{{fkipFacultyId}}
+### 2. Get Student's Exam Progress for Package (GET /v1/exam-progress/:examPackageId) - STUDENT Only
+GET {{baseUrl}}/exam-progress/{{fkomputerPackageId}}
 Authorization: Bearer {{studentAccessToken}}
+X-API-Key: {{API_KEY}}
 
-### 3. Get All Exam Progress (GET /v1/exam-progress) - Requires ADMIN Role
+### 3. Get All Exam Progress (GET /v1/exam-progress) - ADMIN Only
 GET {{baseUrl}}/exam-progress
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{adminAccessToken}}
+X-API-Key: {{API_KEY}}
 
-### 4. Download Faculty Data (Export for Offline Sync) (GET /v1/exam-progress/export/:facultyId) - Public
-GET {{baseUrl}}/exam-progress/export/{{fkipFacultyId}}
+### 4. Download Exam Package Data (Export for Offline Sync) (GET /v1/exam-progress/export/:examPackageId) - Public
+GET {{baseUrl}}/exam-progress/export/{{fkomputerPackageId}}
+X-API-Key: {{API_KEY}}

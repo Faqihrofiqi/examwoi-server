@@ -1,18 +1,28 @@
+// frontend/src/api/axiosConfig.js
 import axios from 'axios';
+import API_CONFIG  from './apiConfig';
+//#TODO ensure that the .env file is in the root of the monorepo or adjust the path accordingly in craco.config.js
+
+const API_BASE_URL = API_CONFIG.API_BASE_URL; // Ganti dengan URL API Anda jika diperlukan,
+const API_KEY = API_CONFIG.API_KEY;
 
 const apiClient = axios.create({
-    baseURL: process.env.REACT_APP_API_BASE_URL, 
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'x-api-key': API_KEY
     },
 });
 
-// Interceptor untuk menambahkan Access Token ke setiap request yang dilindungi
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+        if (API_KEY && API_KEY !== 'YOUR_STATIC_SECURE_API_KEY_HERE') {
+            config.headers['x-api-key'] = API_KEY;
         }
         return config;
     },
@@ -21,40 +31,17 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Interceptor untuk menangani expired token atau unauthorized response
 apiClient.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-        // Tangani Refresh Token jika Access Token expired (status 401)
-        if (error.response.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true; // Tandai bahwa request ini sudah dicoba ulang
-            try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (refreshToken) {
-                    const rs = await axios.post(
-                        `${process.env.REACT_APP_API_BASE_URL}/auth/refresh-token`,
-                        { refreshToken }
-                    );
-                    const { accessToken } = rs.data;
-                    localStorage.setItem('accessToken', accessToken);
-                    // Update Authorization header untuk request asli yang gagal
-                    apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-                    originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
-                    // Lanjutkan request yang gagal
-                    return apiClient(originalRequest);
-                }
-            } catch (refreshError) {
-                // Jika refresh token juga gagal atau tidak ada, paksa logout
-                console.error("Refresh token failed, forcing logout:", refreshError);
-                localStorage.clear();
-                window.location.href = '/admin/login'; // Redirect ke login
-                return Promise.reject(refreshError);
-            }
-        } else if (error.response.status === 403) {
-            // Jika Forbidden, langsung redirect ke access denied
-            console.warn("Access Forbidden:", error.response.data.message);
-            window.location.href = '/access-denied';
+    (response) => {
+        return response;
+    },
+    (error) => {
+        console.log(error);
+        
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            alert("Sesi Anda telah berakhir atau Anda tidak memiliki izin. Silakan login kembali.");
+            localStorage.clear();
+            window.location.href = '/admin/login';
         }
         return Promise.reject(error);
     }

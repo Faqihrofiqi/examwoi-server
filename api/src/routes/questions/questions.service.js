@@ -1,14 +1,11 @@
 // src/routes/questions/questions.service.js
-const { PrismaClient, Status } = require('@prisma/client');
+const { PrismaClient, PackageStatus } = require('@prisma/client'); // Hapus 'Status' dari import karena tidak lagi di Question
 const prisma = new PrismaClient();
 const { parseRawQuestion, parseRawQuestionsBatch } = require('../../utils/question.parser');
 
 /**
  * Previews question(s) from raw text without saving them to the database.
  * Can handle single or batch raw text.
- * @param {string} rawText - The raw text content of the question(s).
- * @param {boolean} isBatch - True if the rawText is expected to contain multiple questions.
- * @returns {object|Array<object>} The parsed question content (single or array).
  */
 async function previewQuestion(rawText, isBatch = false) {
   try {
@@ -25,7 +22,15 @@ async function previewQuestion(rawText, isBatch = false) {
     throw err;
   }
 }
-async function createQuestion(facultyId, questionData, status = 'DRAFT', isBatch = false) {
+
+/**
+ * Creates new question(s) from raw text or structured content, linking to an ExamPackage.
+ * @param {string} examPackageId - The ID of the ExamPackage this question(s) belong to.
+ * @param {object} questionData - Data for the new question(s) (rawText or content).
+ * @param {boolean} isBatch - True if the rawText is expected to contain multiple questions.
+ * @returns {Promise<object|Array<object>>} The created question(s).
+ */
+async function createQuestion(examPackageId, questionData, isBatch = false) {
   const { rawText, content } = questionData;
   let questionsToCreate = [];
 
@@ -35,27 +40,31 @@ async function createQuestion(facultyId, questionData, status = 'DRAFT', isBatch
       error.statusCode = 400;
       throw error;
     }
-    const parsedBatch = parseRawQuestionsBatch(rawText);
-    questionsToCreate = parsedBatch.map(parsedContent => ({
-      content: parsedContent,
-      rawText: JSON.stringify(parsedContent),
-      status,
-      facultyId: facultyId, // <-- PERBAIKAN PENTING DI SINI: Langsung berikan facultyId
-      publishedAt: status === 'PUBLISHED' ? new Date() : null,
-      questionType: parsedContent.questionType || 'TEXT'
+    const parsedBatchResults = parseRawQuestionsBatch(rawText);
+    questionsToCreate = parsedBatchResults.map(item => ({
+      content: item.content,
+      rawText: item.rawText, // Simpan raw text asli blok ini
+      examPackageId: examPackageId,
+      questionType: item.content.questionType || 'TEXT'
     }));
-  } else {
+  } else { // Single question mode (raw or structured)
     let parsedContent;
-    let questionType = 'TEXT';
+    let questionType;
+    let finalRawText;
 
-    if (rawText) {
+    if (rawText) { // Jika input dari raw text
       parsedContent = parseRawQuestion(rawText);
       questionType = parsedContent.questionType || 'TEXT';
-    } else if (content) {
+      finalRawText = rawText;
+    } else if (content) { // Jika input dari structured form
       parsedContent = content;
       if (parsedContent.imageUrl) questionType = 'IMAGE';
       else if (parsedContent.audioUrl) questionType = 'AUDIO';
       else questionType = 'TEXT';
+      const optionsMap = parsedContent.options.map(opt => `-- ${opt.text}`).join('\n');
+      finalRawText = `# ${parsedContent.questionText}\n` + optionsMap + `\n@${parsedContent.correctOptionId}`;
+      if (parsedContent.imageUrl) finalRawText = `[IMG:${parsedContent.imageUrl}]\n` + finalRawText;
+      if (parsedContent.audioUrl) finalRawText = `[AUDIO:${parsedContent.audioUrl}]\n` + finalRawText;
     } else {
       const error = new Error('rawText atau konten terstruktur harus disediakan untuk satu soal.');
       error.statusCode = 400;
@@ -63,17 +72,15 @@ async function createQuestion(facultyId, questionData, status = 'DRAFT', isBatch
     }
     questionsToCreate.push({
       content: parsedContent,
-      rawText: rawText || JSON.stringify(content),
-      status,
-      faculty: { connect: { id: facultyId } }, // Ini tetap untuk single question karena create() mendukung relasi
-      publishedAt: status === 'PUBLISHED' ? new Date() : null,
+      rawText: finalRawText,
+      examPackageId: examPackageId,
       questionType
     });
   }
 
-  const faculty = await prisma.faculty.findUnique({ where: { id: facultyId } });
-  if (!faculty) {
-    const error = new Error('Fakultas tidak ditemukan.');
+  const examPackage = await prisma.examPackage.findUnique({ where: { id: examPackageId } });
+  if (!examPackage) {
+    const error = new Error('Paket ujian tidak ditemukan.');
     error.statusCode = 404;
     throw error;
   }
@@ -82,35 +89,50 @@ async function createQuestion(facultyId, questionData, status = 'DRAFT', isBatch
     const result = await prisma.question.createMany({
       data: questionsToCreate
     });
+    await prisma.examPackage.update({
+      where: { id: examPackageId },
+      data: { totalQuestions: { increment: result.count } }
+    });
     console.log(`Berhasil membuat ${result.count} soal dalam batch.`);
     return { count: result.count, message: `Berhasil membuat ${result.count} soal.` };
   } else {
     const question = await prisma.question.create({
       data: questionsToCreate[0]
     });
+    await prisma.examPackage.update({
+      where: { id: examPackageId },
+      data: { totalQuestions: { increment: 1 } }
+    });
     return question;
   }
 }
 
 /**
- * Retrieves questions based on filters.
- * @param {object} filters - Filters like facultyId, status.
+ * Retrieves questions based on filters. Now filtered by examPackageId.
+ * @param {object} filters - Filters like examPackageId.
  * @returns {Promise<Array<object>>} List of questions.
  */
 async function getQuestions(filters) {
-  const { facultyId, status } = filters;
+  const { examPackageId } = filters;
   const where = {};
 
-  if (facultyId) {
-    where.facultyId = facultyId;
-  }
-  if (status) {
-    where.status = status;
+  if (examPackageId) {
+    where.examPackageId = examPackageId;
   }
 
   const questions = await prisma.question.findMany({
     where,
-    include: { faculty: { select: { id: true, name: true } } },
+    include: {
+      examPackage: {
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          publishedAt: true,
+          faculty: { select: { id: true, name: true } }
+        }
+      }
+    },
     orderBy: { createdAt: "desc" },
   });
   return questions;
@@ -124,7 +146,17 @@ async function getQuestions(filters) {
 async function getQuestionById(questionId) {
   const question = await prisma.question.findUnique({
     where: { id: questionId },
-    include: { faculty: { select: { id: true, name: true } } },
+    include: {
+      examPackage: {
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          publishedAt: true,
+          faculty: { select: { id: true, name: true } }
+        }
+      }
+    },
   });
   if (!question) {
     const error = new Error("Soal tidak ditemukan.");
@@ -137,44 +169,53 @@ async function getQuestionById(questionId) {
 /**
  * Updates an existing question.
  * @param {string} questionId - The ID of the question to update.
- * @param {object} updateData - Data to update the question (rawText, content, status, facultyId).
+ * @param {object} updateData - Data to update the question (rawText, content, examPackageId).
  * @returns {Promise<object>} The updated question.
  */
 async function updateQuestion(questionId, updateData) {
-  const { rawText, content, status, facultyId } = updateData;
+  // Pastikan `isBatch` tidak ada di updateData sebelum diakses oleh Prisma
+  const { isBatch, ...dataForPrisma } = updateData; // <--- Hapus isBatch dari updateData
+
+  const { rawText, content, examPackageId } = dataForPrisma; // Gunakan dataForPrisma
   let finalContent;
   let questionType;
+  let finalRawText;
 
-  // Perbaikan di sini: Gunakan parseRawQuestion untuk single update
-  if (rawText) {
-    finalContent = parseRawQuestion(rawText); // <-- PERBAIKAN: Gunakan parseRawQuestion
+  const existingQuestion = await prisma.question.findUnique({
+    where: { id: questionId },
+    select: { content: true, rawText: true, questionType: true, examPackageId: true },
+  });
+  if (!existingQuestion) {
+    const error = new Error("Soal tidak ditemukan untuk diperbarui.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (rawText !== undefined) {
+    finalContent = parseRawQuestion(rawText);
     questionType = finalContent.questionType || "TEXT";
-  } else if (content) {
+    finalRawText = rawText;
+  } else if (content !== undefined) {
     finalContent = content;
     if (finalContent.imageUrl) questionType = "IMAGE";
     else if (finalContent.audioUrl) questionType = "AUDIO";
     else questionType = "TEXT";
+    const optionsMap = finalContent.options.map(opt => `-- ${opt.text}`).join('\n');
+    finalRawText = `# ${finalContent.questionText}\n` + optionsMap + `\n@${finalContent.correctOptionId}`;
+    if (finalContent.imageUrl) finalRawText = `[IMG:${finalContent.imageUrl}]\n` + finalRawText;
+    if (finalContent.audioUrl) finalRawText = `[AUDIO:${finalContent.audioUrl}]\n` + finalRawText;
   } else {
-    const existingQuestion = await prisma.question.findUnique({
-      where: { id: questionId },
-      select: { content: true, questionType: true },
-    });
-    if (existingQuestion) {
-      finalContent = existingQuestion.content;
-      questionType = existingQuestion.questionType || "TEXT";
-    } else {
-      const error = new Error("Soal tidak ditemukan untuk diperbarui.");
-      error.statusCode = 404;
-      throw error;
-    }
+    finalContent = existingQuestion.content;
+    questionType = existingQuestion.questionType || "TEXT";
+    finalRawText = existingQuestion.rawText;
   }
 
-  if (facultyId) {
-    const faculty = await prisma.faculty.findUnique({
-      where: { id: facultyId },
+  if (examPackageId && examPackageId !== existingQuestion.examPackageId) {
+    const examPackage = await prisma.examPackage.findUnique({
+      where: { id: examPackageId },
     });
-    if (!faculty) {
-      const error = new Error("Fakultas tidak ditemukan.");
+    if (!examPackage) {
+      const error = new Error("Paket ujian baru tidak ditemukan.");
       error.statusCode = 404;
       throw error;
     }
@@ -185,13 +226,8 @@ async function updateQuestion(questionId, updateData) {
       where: { id: questionId },
       data: {
         content: finalContent,
-        rawText: rawText || JSON.stringify(finalContent),
-        status,
-        facultyId,
-        publishedAt:
-          status === "PUBLISHED" && !updateData.publishedAt
-            ? new Date()
-            : updateData.publishedAt,
+        rawText: finalRawText,
+        examPackageId: examPackageId || existingQuestion.examPackageId,
         questionType,
       },
     });
@@ -206,110 +242,11 @@ async function updateQuestion(questionId, updateData) {
   }
 }
 
-/**
- * Publishes a question (changes its status to PUBLISHED).
- * This function specifically handles the DRAFT -> PUBLISHED transition.
- * @param {string} questionId - The ID of the question to publish.
- * @returns {Promise<object>} The published question.
- * @throws {Error} If the question is not found or is not in DRAFT status.
- */
-async function publishQuestion(questionId) {
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
-    select: { id: true, status: true }
-  });
-
-  if (!question) {
-    const error = new Error('Soal tidak ditemukan.');
-    error.statusCode = 404;
-    throw error;
-  }
-  if (question.status !== Status.DRAFT) {
-    const error = new Error(`Tidak dapat menerbitkan soal yang berstatus ${question.status}. Hanya soal DRAFT yang dapat diterbitkan.`);
-    error.statusCode = 400; // Bad Request
-    throw error;
-  }
-
-  try {
-    const publishedQuestion = await prisma.question.update({
-      where: { id: questionId },
-      data: {
-        status: Status.PUBLISHED,
-        publishedAt: new Date(), // Set waktu publikasi
-      }
-    });
-    return publishedQuestion;
-  } catch (error) {
-    if (error.code === 'P2025') {
-      const err = new Error('Soal tidak ditemukan untuk diterbitkan.');
-      err.statusCode = 404;
-      throw err;
-    }
-    throw error;
-  }
-}
-
-/**
- * Updates the status of a question to ARCHIVED or DRAFT.
- * Handles transitions: PUBLISHED -> ARCHIVED, ARCHIVED -> DRAFT.
- * @param {string} questionId - The ID of the question.
- * @param {Status} newStatus - The new status (ARCHIVED or DRAFT).
- * @returns {Promise<object>} The updated question.
- * @throws {Error} If the transition is invalid.
- */
-async function updateQuestionStatus(questionId, newStatus) {
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
-    select: { id: true, status: true }
-  });
-
-  if (!question) {
-    const error = new Error('Soal tidak ditemukan.');
-    error.statusCode = 404;
-    throw error;
-  }
-
-  const currentStatus = question.status;
-
-  switch (newStatus) {
-    case Status.ARCHIVED:
-      if (currentStatus !== Status.PUBLISHED) {
-        const error = new Error(`Tidak dapat mengarsipkan soal yang berstatus ${currentStatus}. Hanya soal PUBLISHED yang dapat diarsipkan.`);
-        error.statusCode = 400;
-        throw error;
-      }
-      break;
-    case Status.DRAFT:
-      if (currentStatus !== Status.ARCHIVED) {
-        const error = new Error(`Tidak dapat mengubah status ke DRAFT dari ${currentStatus}. Hanya soal ARCHIVED yang dapat dikembalikan ke DRAFT.`);
-        error.statusCode = 400;
-        throw error;
-      }
-      break;
-    default:
-      const error = new Error('Status baru tidak valid. Hanya ARCHIVED atau DRAFT yang diizinkan untuk endpoint ini.');
-      error.statusCode = 400;
-      throw error;
-  }
-
-  try {
-    const updatedQuestion = await prisma.question.update({
-      where: { id: questionId },
-      data: {
-        status: newStatus,
-        publishedAt: (newStatus === Status.DRAFT) ? null : undefined,
-      }
-    });
-    return updatedQuestion;
-  } catch (error) {
-    if (error.code === 'P2025') {
-      const err = new Error('Soal tidak ditemukan untuk pembaruan status.');
-      err.statusCode = 404;
-      throw err;
-    }
-    throw error;
-  }
-}
+// Hapus fungsi publishQuestion dan updateQuestionStatus karena status sekarang diurus oleh ExamPackage
+/*
+async function publishQuestion(questionId) { ... }
+async function updateQuestionStatus(questionId, newStatus) { ... }
+*/
 
 /**
  * Deletes a question by ID.
@@ -319,8 +256,19 @@ async function updateQuestionStatus(questionId, newStatus) {
 async function deleteQuestion(questionId) {
   try {
     const deletedQuestion = await prisma.question.delete({
-      where: { id: questionId }
+      where: { id: questionId },
     });
+    // Opsional: Kurangi totalQuestions di ExamPackage
+    if (deletedQuestion.examPackageId) {
+      await prisma.examPackage.update({
+        where: { id: deletedQuestion.examPackageId },
+        data: {
+          totalQuestions: {
+            decrement: 1
+          }
+        }
+      });
+    }
     return deletedQuestion;
   } catch (error) {
     if (error.code === 'P2025') {
@@ -330,7 +278,7 @@ async function deleteQuestion(questionId) {
     }
     if (error.code === 'P2003') {
       const err = new Error('Tidak dapat menghapus soal karena terkait dengan progres ujian siswa. Harap hapus progres ujian terkait terlebih dahulu.');
-      err.statusCode = 400;
+      err.statusCode = 400; // Bad Request
       throw err;
     }
     throw error;
@@ -343,7 +291,7 @@ module.exports = {
   getQuestions,
   getQuestionById,
   updateQuestion,
-  publishQuestion,
-  updateQuestionStatus,
+  // publishQuestion, // Hapus export ini
+  // updateQuestionStatus, // Hapus export ini
   deleteQuestion
 };

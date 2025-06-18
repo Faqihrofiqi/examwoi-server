@@ -17,6 +17,7 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import VerifyOtpPage from './pages/VerifyOtpPage';
+import AccessDeniedPage from './pages/AccessDeniedPage'; 
 
 // Impor konfigurasi axios yang sudah kita buat
 import apiClient from './api/axiosConfig'; // PASTIKAN FILE INI SUDAH DIBUAT
@@ -139,13 +140,7 @@ function App() {
     <Router>
       <Routes>
         {/* Rute Standalone (tidak butuh proteksi khusus) */}
-        <Route path="/access-denied" element={
-          <div className="container-fluid mt-5 text-center">
-            <h1>Akses Ditolak</h1>
-            <p>Anda tidak memiliki izin untuk melihat halaman ini.</p>
-            <Link to="/admin/login" className="btn btn-primary">Login Kembali</Link>
-          </div>
-        } />
+        <Route path="/access-denied" element={<AccessDeniedPage />} />
 
         {/* Grup Rute Publik (Hanya untuk Tamu) */}
         <Route element={<PublicRoute />}>
