@@ -1,9 +1,0 @@
-/* src/App.css - File CSS Utama yang Minimalis */
-
-/* Impor variabel global agar tersedia di mana-mana */
-@import './styles/_base.css';
-
-/* Impor gaya dasar yang berlaku di seluruh aplikasi */
-@import './styles/_variables.css';
-
-/* Tidak ada gaya spesifik komponen/halaman di sini lagi */

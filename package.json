@@ -1,34 +1,32 @@
 {
-  "name": "examwoi-monorepo",
+  "name": "examwoi-api",
   "version": "1.0.2",
-  "private": true,
-  "description": "Monorepo for Examwoi Hybrid LMS (Backend API & Frontend Admin)",
-  "workspaces": [
-    "api",
-    "frontend"
-  ],
- 
+  "description": "",
+  "main": "src/server.js",
   "scripts": {
-    "start:backend": "npm start -w api",
-    "dev:backend": "npm run dev -w api",
-    "start:frontend": "npm start -w frontend",
-    "dev:frontend": "npm run dev -w frontend",
-    "dev:all": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
-    "build:frontend": "npm run build -w frontend",
-    "start:all": "concurrently \"pm2 start api/src/server.js\" \"pm2 serve -s ./frontend/build -l 3000\"",
-    "install:all": "npm install",
-    "prisma:migrate": "npx prisma migrate deploy --schema=api/prisma/schema.prisma",
-    "prisma:generate": "npx prisma generate --schema=api/prisma/schema.prisma",
-    "prisma:studio": "npx prisma studio --schema=api/prisma/schema.prisma",
-    "prisma:seed": "node api/prisma/seed.js",
-    "prisma:full": "npm run prisma:migrate && npm run prisma:generate && npm run prisma:seed",
-    "clean:all": "rimraf -rf ./api/node_modules ./frontend/node_modules ./node_modules"
-  },  "keywords": [],
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "prisma:migrate": "npx prisma migrate dev --name",
+    "prisma:generate": "npx prisma generate",
+    "prisma:seed": "node prisma/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^7.0.3"
+  },
   "devDependencies": {
-    "concurrently": "^9.1.2",
-    "cross-env": "^7.0.3",
-    "rimraf": "^6.0.1"
+    "prisma": "^6.10.1"
   }
 }
