@@ -1,27 +1,29 @@
 {
   "name": "examwoi-monorepo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Monorepo for Examwoi Hybrid LMS (Backend API & Frontend Admin)",
   "workspaces": [
     "api",
     "frontend"
   ],
+ 
   "scripts": {
     "start:backend": "npm start -w api",
     "dev:backend": "npm run dev -w api",
-    "start:frontend": "cross-env REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL REACT_APP_APP_URL=$REACT_APP_APP_URL REACT_APP_API_KEY=$REACT_APP_API_KEY npm start -w frontend",
-    "dev:frontend": "cross-env REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL REACT_APP_APP_URL=$REACT_APP_APP_URL REACT_APP_API_KEY=$REACT_APP_API_KEY npm run dev -w frontend",
+    "start:frontend": "npm start -w frontend",
+    "dev:frontend": "npm run dev -w frontend",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
-    "start:all": "concurrently \"npm start -w api\" \"npm start -w frontend\"",
+    "build:frontend": "npm run build -w frontend",
+    "start:all": "concurrently \"pm2 start api/src/server.js\" \"pm2 serve -s ./frontend/build -l 3000\"",
     "install:all": "npm install",
-    "prisma:migrate": "npm run prisma:migrate -w api --name",
-    "prisma:generate": "npm run prisma:generate -w api",
-    "prisma:studio": "npm run prisma:studio -w api",
-    "prisma:seed": "npm run prisma:seed -w api",
+    "prisma:migrate": "npx prisma migrate deploy --schema=api/prisma/schema.prisma",
+    "prisma:generate": "npx prisma generate --schema=api/prisma/schema.prisma",
+    "prisma:studio": "npx prisma studio --schema=api/prisma/schema.prisma",
+    "prisma:seed": "node api/prisma/seed.js",
+    "prisma:full": "npm run prisma:migrate && npm run prisma:generate && npm run prisma:seed",
     "clean:all": "rimraf -rf ./api/node_modules ./frontend/node_modules ./node_modules"
-  },
-  "keywords": [],
+  },  "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
