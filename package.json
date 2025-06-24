@@ -16,9 +16,11 @@
     "start:all": "concurrently \"npm start -w api\" \"npm start -w frontend\"",
     "install:all": "npm install",
     "prisma:migrate": "npm run prisma:migrate -w api --name",
+    "prisma:install": "npm run prisma:migrate -w api --name install",
     "prisma:generate": "npm run prisma:generate -w api",
     "prisma:studio": "npm run prisma:studio -w api",
     "prisma:seed": "npm run prisma:seed -w api",
+    "prisma:full": "npm run prisma:install && npm run prisma:generate && npm run prisma:seed -w api",
     "clean:all": "rimraf -rf ./api/node_modules ./frontend/node_modules ./node_modules"
   },
   "keywords": [],

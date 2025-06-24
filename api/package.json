@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "prisma:migrate": "DOTENV_CONFIG_PATH=../../.env npx prisma migrate dev --name",
-    "prisma:generate": "DOTENV_CONFIG_PATH=../../.env npx prisma generate",
-    "prisma:seed": "DOTENV_CONFIG_PATH=../../.env node prisma/seed.js",
+    "prisma:migrate": "set DOTENV_CONFIG_PATH=../../.env npx prisma migrate dev --name",
+    "prisma:generate": "set DOTENV_CONFIG_PATH=../../.env npx prisma generate",
+    "prisma:seed": "set DOTENV_CONFIG_PATH=../../.env node prisma/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
