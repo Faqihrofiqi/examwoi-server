@@ -19,6 +19,7 @@ app.use(morgan('combined'));
 
 // Cara yang Direkomendasikan (Izinkan hanya origin spesifik)
 const allowedOrigins = [
+  'http://147.139.243.222:3000',
   'http://localhost:3001', // Frontend React di development
   'http://localhost:3000', // Jika ada bagian frontend yang dilayani di port yang sama
   /\.herokudns.com$/, // Contoh wildcard untuk Heroku (misal *.herokudns.com)
