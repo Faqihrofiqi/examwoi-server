@@ -38,28 +38,29 @@ if (APP_URL1 && APP_URL1.trim() !== "") {
 }
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Izinkan requests tanpa origin (misal: mobile apps, file://)
-    if (!origin) return callback(null, true);
+  // origin: (origin, callback) => {
+  //   // Izinkan requests tanpa origin (misal: mobile apps, file://)
+  //   if (!origin) return callback(null, true);
 
-    const isAllowed = allowedOrigins.some((allowedOrigin) => {
-      if (typeof allowedOrigin === "string") {
-        return allowedOrigin === origin;
-      }
-      return allowedOrigin.test(origin);
-    });
+  //   const isAllowed = allowedOrigins.some((allowedOrigin) => {
+  //     if (typeof allowedOrigin === "string") {
+  //       return allowedOrigin === origin;
+  //     }
+  //     return allowedOrigin.test(origin);
+  //   });
 
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.warn(
-        `CORS: Origin ${origin} diblokir oleh kebijakan CORS. Allowed: ${allowedOrigins.join(
-          ", "
-        )}`
-      );
-      callback(new Error("Tidak diizinkan oleh CORS"));
-    }
-  },
+  //   if (isAllowed) {
+  //     callback(null, true);
+  //   } else {
+  //     console.warn(
+  //       `CORS: Origin ${origin} diblokir oleh kebijakan CORS. Allowed: ${allowedOrigins.join(
+  //         ", "
+  //       )}`
+  //     );
+  //     callback(new Error("Tidak diizinkan oleh CORS"));
+  //   }
+  // },
+  origin: "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204, // Penting untuk preflight requests
