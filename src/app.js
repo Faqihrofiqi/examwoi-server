@@ -22,12 +22,13 @@ const url = process.env.APP_URL;
 const url1 = process.env.APP_URL1;
 // Cara yang Direkomendasikan (Izinkan hanya origin spesifik)
 const allowedOrigins = [
-  "https://examwoi-10e26c93442d.herokuapp.com",
   `${url}`,
   `${url1}`,
   "http://localhost:3001", // Frontend React di development
   "http://localhost:3000", // Jika ada bagian frontend yang dilayani di port yang sama
 ];
+console.log(url);
+console.log(url1);
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -66,6 +67,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 
 // Import router utama
 const apiRouter = require("./routes");
+const { log } = require("console");
 app.use(`/${process.env.API_VERSION}`, apiRouter);
 
 // Basic health check route
