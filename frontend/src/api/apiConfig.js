@@ -6,7 +6,7 @@ const API_CONFIG = {
 
     // Kunci API untuk otentikasi aplikasi ke server
     // Harus sama dengan API_KEY yang dikonfigurasi di backend Anda.
-    API_KEY: 'basksokontolbaksokontolbaksokontol', 
+    API_KEY: 'awdjioaiwdjoaiwjdiawjdiwadjincaisni', 
 };
 
 export default API_CONFIG;
