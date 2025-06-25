@@ -24,6 +24,8 @@ const allowedOrigins = [
   "http://localhost:3000", // Jika ada bagian frontend yang dilayani di port yang sama
   /\.examwoi\.com$/, // Contoh wildcard untuk .examwoi.com
   /\.examwoi\.net$/, // Contoh wildcard untuk .examwoi.net
+  process.env.APP_URL,
+  process.env.APP_URL1,
   // Tambahkan domain spesifik lain jika ada
   // 'https://your-specific-prod-domain.com',
 ];
