@@ -1,32 +1,32 @@
 // src/app.js
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
+require("dotenv").config({
+  path: require("path").resolve(__dirname, "../../.env"),
+});
 const express = require("express");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
 const app = express();
-const morgan = require('morgan');
-const apiKeyMiddleware = require('./middleware/apiKey.middleware');
+const morgan = require("morgan");
+const apiKeyMiddleware = require("./middleware/apiKey.middleware");
 
 const prisma = new PrismaClient();
 app.set("prisma", prisma);
 
-app.use(morgan('combined')); 
+app.use(morgan("combined"));
 
 // --- Konfigurasi CORS ---
 // Cara Paling Sederhana (Izinkan semua origin - TIDAK DIREKOMENDASIKAN UNTUK PRODUKSI)
 // app.use(cors());
-
+const url = process.env.APP_URL;
+const url1 = process.env.APP_URL1;
 // Cara yang Direkomendasikan (Izinkan hanya origin spesifik)
 const allowedOrigins = [
-  'http://147.139.243.222:3000',
-  'http://localhost:3001', // Frontend React di development
-  'http://localhost:3000', // Jika ada bagian frontend yang dilayani di port yang sama
-  /\.herokudns.com$/, // Contoh wildcard untuk Heroku (misal *.herokudns.com)
-  /\.examwoi\.com$/, // Contoh wildcard untuk .examwoi.com (misal dev.examwoi.com, app.examwoi.com)
-  /\.examwoi\.net$/, // Contoh wildcard untuk .examwoi.net
-  'https://another-allowed-domain.com', // Domain spesifik lain
-  // Tambahkan domain lain yang Anda izinkan secara spesifik di sini
+  "https://examwoi-10e26c93442d.herokuapp.com",
+  `${url}`,
+  `${url1}`,
+  "http://localhost:3001", // Frontend React di development
+  "http://localhost:3000", // Jika ada bagian frontend yang dilayani di port yang sama
 ];
 
 const corsOptions = {
@@ -35,8 +35,8 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     // Periksa apakah origin ada di daftar allowedOrigins
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (typeof allowedOrigin === 'string') {
+    const isAllowed = allowedOrigins.some((allowedOrigin) => {
+      if (typeof allowedOrigin === "string") {
         return allowedOrigin === origin;
       }
       // Jika allowedOrigin adalah regex, test origin
@@ -47,19 +47,19 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.warn(`CORS: Origin ${origin} diblokir oleh kebijakan CORS.`);
-      callback(new Error('Tidak diizinkan oleh CORS'));
+      callback(new Error("Tidak diizinkan oleh CORS"));
     }
   },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
 
 app.use(apiKeyMiddleware);
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Melayani file statis dari folder public
 app.use(express.static(path.join(__dirname, "../public")));
