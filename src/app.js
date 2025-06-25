@@ -1,7 +1,5 @@
-// api/src/app.js
-require("dotenv").config({
-  path: require("path").resolve(__dirname, "../../.env"),
-});
+// src/app.js
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
@@ -15,16 +13,10 @@ app.set("prisma", prisma);
 
 app.use(morgan("combined"));
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+// --- Konfigurasi CORS (Penting: Posisi di sini) ---
+const APP_URL = process.env.APP_URL;
+const APP_URL1 = process.env.APP_URL1;
 
-app.use(apiKeyMiddleware); // API Key middleware harus di atas CORS jika CORS memblokir berdasarkan origin
-
-// --- Konfigurasi CORS ---
-const APP_URL = process.env.APP_URL; // Ambil nilai variabel lingkungan
-const APP_URL1 = process.env.APP_URL1; // Ambil nilai variabel lingkungan
-
-// Log untuk debugging saat deploy
 console.log(`CORS Config: APP_URL=${APP_URL}, APP_URL1=${APP_URL1}`);
 
 const allowedOrigins = [
@@ -32,10 +24,10 @@ const allowedOrigins = [
   "http://localhost:3000", // Jika ada bagian frontend yang dilayani di port yang sama
   /\.examwoi\.com$/, // Contoh wildcard untuk .examwoi.com
   /\.examwoi\.net$/, // Contoh wildcard untuk .examwoi.net
-  "https://another-allowed-domain.com", // Domain spesifik lain
+  // Tambahkan domain spesifik lain jika ada
+  // 'https://your-specific-prod-domain.com',
 ];
 
-// Tambahkan URL dari environment variable HANYA jika terdefinisi dan tidak kosong
 if (APP_URL && APP_URL.trim() !== "") {
   allowedOrigins.push(APP_URL);
 }
@@ -68,11 +60,16 @@ const corsOptions = {
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
-  optionsSuccessStatus: 204,
+  optionsSuccessStatus: 204, // Penting untuk preflight requests
 };
 app.use(cors(corsOptions));
 
-// Melayani file statis dari folder public (posisi tidak berubah)
+app.use(apiKeyMiddleware);
+
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+// Melayani file statis dari folder public
 app.use(express.static(path.join(__dirname, "../public")));
 
 // Import router utama
@@ -104,3 +101,4 @@ process.on("beforeExit", async () => {
 });
 
 module.exports = app;
+// Jika ingin menjalankan server secara langsung
