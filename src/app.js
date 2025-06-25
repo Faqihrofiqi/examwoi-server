@@ -38,6 +38,7 @@ const corsOptions = {
     // Periksa apakah origin ada di daftar allowedOrigins
     const isAllowed = allowedOrigins.some((allowedOrigin) => {
       if (typeof allowedOrigin === "string") {
+        console.log(allowedOrigin, origin);
         return allowedOrigin === origin;
       }
       // Jika allowedOrigin adalah regex, test origin
