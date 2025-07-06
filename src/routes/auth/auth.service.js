@@ -1,7 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { hashPassword, comparePassword } = require("../../utils/password.utils");
-const { sendOtpEmail } = require("../../utils/email.utils"); // Menggunakan fungsi email yang sudah direvisi
+// --- Perubahan di sini: Impor fungsi email yang spesifik ---
+const { sendVerificationEmail, sendResetPasswordEmail } = require("../../utils/email.utils");
 const jwt = require("jsonwebtoken");
 
 // Variabel Lingkungan untuk JWT
@@ -44,6 +45,7 @@ async function generateAuthTokens(payload) {
  */
 async function registerUser(userData) {
   const {
+    name,
     email,
     password,
     username,
@@ -54,8 +56,6 @@ async function registerUser(userData) {
     referralCode,
   } = userData;
 
-  // Cek duplikasi email dan phone dalam satu query (atau terpisah untuk pesan error spesifik)
-  // Ini memastikan tidak ada data yang disimpan jika salah satu sudah terdaftar
   const existingEmailUser = await prisma.user.findUnique({ where: { email } });
   if (existingEmailUser) {
     const error = new Error("Email already registered.");
@@ -63,7 +63,6 @@ async function registerUser(userData) {
     throw error;
   }
 
-  // Hanya cek phone jika phone disediakan
   if (phone) {
     const existingPhoneUser = await prisma.user.findUnique({
       where: { phone },
@@ -79,9 +78,9 @@ async function registerUser(userData) {
   const otp = generateOtp();
   const otpExpiry = new Date(Date.now() + OTP_VALIDITY_HOURS * 60 * 60 * 1000);
 
-  // Buat user
   const user = await prisma.user.create({
     data: {
+      name,
       email,
       password: hashedPassword,
       username,
@@ -93,8 +92,8 @@ async function registerUser(userData) {
       otp,
       otpExpiry,
       isVerified: false,
-      lastOtpRequest: new Date(), // Set initial request time saat user dibuat
-      otpAttempts: 1, // First attempt saat user dibuat
+      lastOtpRequest: new Date(),
+      otpAttempts: 1,
     },
     select: {
       id: true,
@@ -105,23 +104,19 @@ async function registerUser(userData) {
     },
   });
 
-  // Kirim OTP via Email
-  // Template ID untuk verifikasi akun
+  // --- Perubahan di sini: Panggil sendVerificationEmail ---
   const verificationTemplateId = process.env.EMAIL_VERIFICATION_TEMPLATE_ID;
   if (!verificationTemplateId) {
-    // Jika template ID tidak ada, hapus user yang baru dibuat
     await prisma.user.delete({ where: { id: user.id } });
-    const error = new Error(
-      "Email verification template ID is not configured."
-    );
+    const error = new Error("Email verification template ID is not configured.");
     error.statusCode = 500;
     throw error;
   }
+  const verificationUrl = `${process.env.APP_URL}/verify?email=${encodeURIComponent(user.email)}&otp=${otp}`;
 
   try {
-    await sendOtpEmail(user.email, otp, verificationTemplateId, "VERIFICATION");
+    await sendVerificationEmail(user.email, otp, verificationUrl);
   } catch (emailError) {
-    // Jika gagal kirim email, hapus user yang baru dibuat agar tidak ada data tersimpan
     await prisma.user.delete({ where: { id: user.id } });
     console.error(
       `Failed to send verification email during registration: ${emailError.message}`
@@ -133,7 +128,6 @@ async function registerUser(userData) {
     throw error;
   }
 
-  // Log the OTP request for rate limiting
   await prisma.otpRequestLog.create({
     data: {
       identifier: user.email,
@@ -149,32 +143,30 @@ async function registerUser(userData) {
  * Handles OTP verification.
  * @param {string} email - User's email.
  * @param {string} submittedOtp - OTP submitted by user.
- * @returns {Promise<boolean>} True if verification successful.
+ * @returns {Promise<object>} User info object if verification successful.
  */
 async function verifyOtp(email, submittedOtp) {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
     const error = new Error("User not found.");
-    error.statusCode = 404; // Not Found
+    error.statusCode = 404;
     throw error;
   }
   if (user.isVerified) {
     const error = new Error("Account already verified.");
-    error.statusCode = 400; // Bad Request
+    error.statusCode = 400;
     throw error;
   }
   if (!user.otp || !user.otpExpiry) {
     const error = new Error(
       "No OTP generated for this account or it has expired. Please request a new one."
     );
-    error.statusCode = 400; // Bad Request
+    error.statusCode = 400;
     throw error;
   }
 
-  // Check OTP validity time
   if (new Date() > user.otpExpiry) {
-    // Clear OTP details if expired
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -185,19 +177,17 @@ async function verifyOtp(email, submittedOtp) {
       },
     });
     const error = new Error("OTP has expired. Please request a new one.");
-    error.statusCode = 400; // Bad Request
+    error.statusCode = 400;
     throw error;
   }
 
-  // Compare OTP
   if (user.otp !== submittedOtp) {
     const error = new Error("Invalid OTP.");
-    error.statusCode = 400; // Bad Request
+    error.statusCode = 400;
     throw error;
   }
 
-  // OTP is valid, verify user
-  await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id: user.id },
     data: {
       isVerified: true,
@@ -205,10 +195,11 @@ async function verifyOtp(email, submittedOtp) {
       otpExpiry: null,
       otpAttempts: 0,
       lastOtpRequest: null,
-    }, // Clear OTP after successful verification
+    },
+    select: { id: true, email: true, username: true, role: true, isVerified: true } // Mengembalikan data user yang terverifikasi
   });
 
-  return true;
+  return updatedUser;
 }
 
 /**
@@ -222,21 +213,35 @@ async function loginUser(email, password) {
 
   if (!user || !(await comparePassword(password, user.password))) {
     const error = new Error("Invalid email or password.");
-    error.statusCode = 401; // Unauthorized
+    error.statusCode = 401;
     throw error;
   }
+  // --- Perubahan di sini: Pesan spesifik untuk akun belum terverifikasi ---
   if (!user.isVerified) {
-    const error = new Error(
-      "Account not verified. Please verify your email first."
-    );
+    const error = new Error("Akun belum terverifikasi. OTP telah dikirim ulang ke email Anda.");
     error.statusCode = 401; // Unauthorized
-    throw error;
+    error.isVerified = false; // Flag kustom untuk frontend
+
+    // Kirim ulang OTP jika user mencoba login akun belum terverifikasi
+    const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + OTP_VALIDITY_HOURS * 60 * 60 * 1000);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otp, otpExpiry, lastOtpRequest: new Date(), otpAttempts: (user.otpAttempts || 0) + 1 }
+    });
+    const verificationUrl = `${process.env.APP_URL}/verify?email=${encodeURIComponent(user.email)}&otp=${otp}`;
+    try {
+      await sendVerificationEmail(user.email, otp, verificationUrl); // <-- Panggil sendVerificationEmail
+    } catch (emailError) {
+      console.error(`Gagal mengirim ulang email verifikasi saat login: ${emailError.message}`);
+      // Jangan throw error ke user, karena mereka sudah dapat pesan unauthorized
+    }
+    throw error; // Tetap throw error agar login tidak berhasil
   }
 
   const payload = { id: user.id, email: user.email, role: user.role };
   const { accessToken, refreshToken } = await generateAuthTokens(payload);
 
-  // Store refresh token in DB
   await prisma.user.update({
     where: { id: user.id },
     data: { refreshToken },
@@ -250,11 +255,14 @@ async function loginUser(email, password) {
       email: user.email,
       username: user.username,
       role: user.role,
+      isVerified: user.isVerified,
+      profileImageUrl: user.profileImageUrl || null, 
     },
   };
 }
+
 /**
- * Handles forgotten password request by sending OTP via Email.
+ * Handles forgotten password request by sending OTP via Email with a reset link.
  * @param {string} email - User's email address.
  * @returns {Promise<boolean>} True if OTP sent successfully.
  */
@@ -267,7 +275,6 @@ async function forgotPassword(email) {
     throw error;
   }
 
-  // --- Rate Limiting for OTP Request ---
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -281,7 +288,7 @@ async function forgotPassword(email) {
 
   if (otpLogsToday >= OTP_RATE_LIMIT_DAILY) {
     const error = new Error(
-      `You have exceeded the daily OTP request limit (${OTP_RATE_LIMIT_DAILY} times).`
+      `Anda telah melampaui batas permintaan OTP harian (${OTP_RATE_LIMIT_DAILY} kali).`
     );
     error.statusCode = 429;
     throw error;
@@ -294,10 +301,10 @@ async function forgotPassword(email) {
     const remainingTime = Math.ceil(
       (OTP_COOLDOWN_SECONDS * 1000 -
         (Date.now() - user.lastOtpRequest.getTime())) /
-        1000
+      1000
     );
     const error = new Error(
-      `Please wait ${remainingTime} seconds before requesting another OTP.`
+      `Harap tunggu ${remainingTime} detik sebelum meminta OTP lagi.`
     );
     error.statusCode = 429;
     throw error;
@@ -316,21 +323,14 @@ async function forgotPassword(email) {
     },
   });
 
-  // Kirim OTP via Email untuk reset password
-  // Template ID untuk reset password
-  const resetTemplateId = process.env.EMAIL_RESET_TEMPLATE_ID;
-  if (!resetTemplateId) {
-    const error = new Error("Email reset template ID is not configured.");
-    error.statusCode = 500;
-    throw error;
-  }
-
+  // --- Perubahan di sini: Panggil sendResetPasswordEmail ---
+  const resetUrl = `${process.env.APP_URL}/reset-password?email=${encodeURIComponent(user.email)}&otp=${otp}`;
   try {
-    await sendOtpEmail(user.email, otp, resetTemplateId, "RESET_PASSWORD");
+    await sendResetPasswordEmail(user.email, otp, resetUrl);
   } catch (emailError) {
-    console.error(`Failed to send reset email: ${emailError.message}`);
+    console.error(`Gagal mengirim email reset password: ${emailError.message}`);
     const error = new Error(
-      `Failed to send reset email. ${emailError.message}`
+      `Gagal mengirim email reset password. ${emailError.message}`
     );
     error.statusCode = emailError.statusCode || 500;
     throw error;
@@ -446,7 +446,8 @@ async function refreshAccessToken(refreshToken) {
 async function getLoggedInUser(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { // Pilih field yang relevan untuk profil
+    select: {
+      name: true,
       id: true,
       email: true,
       username: true,

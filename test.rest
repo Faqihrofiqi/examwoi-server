@@ -1,6 +1,6 @@
 ### GLOBAL VARIABLES
 
-@baseUrl = http://localhost:3000/v1
+@baseUrl = http://localhost:5000/v1
 @adminEmail = admin@examwoi.com
 @adminPassword = admin123
 @teacherEmail = teacher@examwoi.com
@@ -35,6 +35,7 @@ Content-Type: application/json
 X-API-Key: {{API_KEY}}
 
 {
+  "name": "New Registered User",
   "email": "newuser@example.com",
   "password": "newpassword123",
   "username": "New Registered User",
@@ -56,7 +57,7 @@ X-API-Key: {{API_KEY}}
 
 ### 3. Login User (POST /v1/auth/login)
 @accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhjZjQ3ZDdjLThmMzYtNGViZS04MDU4LThlYmUwMzFiZGY0OSIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAyNTc5MzMsImV4cCI6MTc1MDI2MTUzM30.jXPBi2_CZo_n4I1zw2TCXbphQ83Qvqrx5eSXsPGnODw
-@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhjZjQ3ZDdjLThmMzYtNGViZS04MDU4LThlYmUwMzFiZGY0OSIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAyNTc4NDksImV4cCI6MTc1Mjg0OTg0OX0.ayZt62G7f2VaBdvkg5ejFSyP4u6H8ShY-hMqxnmwK3c
+@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFmZjU2MDQ0LTg1ZmItNGJkNi04MjdhLTZlZGNkZjMxMjM3MiIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTE3ODI0ODYsImV4cCI6MTc1NDM3NDQ4Nn0.qiZXGAPLuDfg7dA40fyMx7jE8NRHjD6YPkJpeW5vcGM
 @userRole =ADMIN
 
 POST {{baseUrl}}/auth/login
@@ -68,6 +69,23 @@ X-API-Key: {{API_KEY}}
   "password": "{{adminPassword}}"
 }
 
+###
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+X-API-Key: {{API_KEY}}
+Authorization: Bearer {{{{refreshToken}}}}
+
+
+###
+GET {{baseUrl}}/auth/me
+Content-Type: application/json
+X-API-Key: {{API_KEY}}
+Authorization: Bearer {{accessToken}}
+
+# {
+#   "email": "{{adminEmail}}",
+#   "password": "{{adminPassword}}"
+# }
 ### Save Login Tokens
 # @set accessToken = {{res.body.accessToken}}
 # @set refreshToken = {{res.body.refreshToken}}

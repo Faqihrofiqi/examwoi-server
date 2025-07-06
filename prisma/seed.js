@@ -31,6 +31,7 @@ async function main() {
   // --- 3. Create Users ---
   const adminUser = await prisma.user.create({
     data: {
+      name: 'admin',
       email: 'admin@examwoi.com',
       password: adminPassword,
       username: 'Admin Examwoi',
@@ -46,6 +47,7 @@ async function main() {
 
   const teacherUser = await prisma.user.create({
     data: {
+      name: 'teacher',
       email: 'teacher@examwoi.com',
       password: teacherPassword,
       username: 'Guru Pengajar',
@@ -61,6 +63,7 @@ async function main() {
 
   const studentUser = await prisma.user.create({
     data: {
+      name: 'student',
       email: 'student@examwoi.com',
       password: studentPassword,
       username: 'Siswa Contoh',
