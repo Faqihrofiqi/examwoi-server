@@ -1,55 +1,26 @@
 // src/utils/email.utils.js
-const nodemailer = require("nodemailer"); // Masih bisa digunakan jika mau fallback ke SMTP biasa
-const fetch = require("node-fetch"); // Untuk melakukan HTTP request ke SMTP2GO API
+const nodemailer = require("nodemailer");
+const fetch = require("node-fetch");
 
-// Karena kita akan menggunakan API SMTP2GO langsung dengan template, nodemailer bisa dipertimbangkan
-// untuk dihapus atau digunakan sebagai fallback jika API gagal. Untuk simplisitas,
-// kita fokus ke API SMTP2GO langsung.
-
-/**
- * Sends an email with OTP using SMTP2GO API template.
- * @param {string} toEmail - The recipient's email address.
- * @param {string} otp - The One-Time Password.
- * @param {string} templateId - The SMTP2GO Template ID.
- * @param {'VERIFICATION' | 'RESET_PASSWORD'} type - Type of email (for context/logging).
- */
-async function sendOtpEmail(toEmail, otp, templateId, type) {
+// Fungsi internal untuk mengirim email menggunakan SMTP2GO API template.
+async function _sendEmailApi(toEmail, templateId, templateData, typeForLog) {
   const apiKey = process.env.SMTP2GO_API_KEY;
   const senderEmail = process.env.EMAIL_FROM;
-  const productName = process.env.APP_NAME || "Examwoi App"; // Bisa ditambahkan APP_NAME di .env
-  const confirmUrl = `${
-    process.env.APP_URL
-  }/auth/verify?email=${encodeURIComponent(toEmail)}&otp=${otp}`; // Contoh confirm URL
-  const resetUrl = `${
-    process.env.APP_URL
-  }/auth/reset?email=${encodeURIComponent(toEmail)}&otp=${otp}`; // Contoh reset URL
 
   if (!apiKey) {
-    const error = new Error("SMTP2GO API Key is not configured.");
+    const error = new Error("SMTP2GO API Key tidak dikonfigurasi.");
     error.statusCode = 500;
     throw error;
   }
   if (!senderEmail) {
-    const error = new Error("Sender email (EMAIL_FROM) is not configured.");
+    const error = new Error("Email pengirim (EMAIL_FROM) tidak dikonfigurasi.");
     error.statusCode = 500;
     throw error;
   }
   if (!templateId) {
-    const error = new Error("Email template ID is missing.");
+    const error = new Error("ID template email tidak ditemukan.");
     error.statusCode = 500;
     throw error;
-  }
-
-  let templateData = {
-    product_name: productName,
-    otp_code: otp, // Nama variabel di template SMTP2GO mungkin 'otp_code' atau 'confirm_code'
-  };
-
-  // Tambahkan URL jika template membutuhkannya
-  if (type === "VERIFICATION") {
-    templateData.confirm_url = confirmUrl;
-  } else if (type === "RESET_PASSWORD") {
-    templateData.reset_url = resetUrl;
   }
 
   const payload = {
@@ -57,10 +28,7 @@ async function sendOtpEmail(toEmail, otp, templateId, type) {
     to: [toEmail],
     sender: senderEmail,
     template_id: templateId,
-    template_data: templateData,
-    // custom_headers: [ // Opsional
-    //   { header: "Reply-To", value: senderEmail }
-    // ]
+    template_data: templateData, // templateData sudah disiapkan di fungsi pemanggil
   };
 
   try {
@@ -77,12 +45,11 @@ async function sendOtpEmail(toEmail, otp, templateId, type) {
 
     if (!response.ok || responseData.error) {
       console.error(
-        `SMTP2GO API Error (Status: ${response.status}):`,
+        `SMTP2GO API Error (${typeForLog}, Status: ${response.status}):`,
         responseData
       );
       const error = new Error(
-        `Failed to send email via SMTP2GO API: ${
-          responseData.error_data || responseData.data.error || "Unknown error"
+        `Gagal mengirim email ${typeForLog} via SMTP2GO API: ${responseData.error_data || responseData.data?.error || "Unknown error"
         }`
       );
       error.statusCode = response.status || 500;
@@ -90,19 +57,97 @@ async function sendOtpEmail(toEmail, otp, templateId, type) {
     }
 
     console.log(
-      `Email OTP (${type}) sent successfully to ${toEmail} via template ${templateId}`
+      `Email ${typeForLog} berhasil dikirim ke ${toEmail} via template ${templateId}`
     );
-    // console.log('SMTP2GO Response:', responseData); // Untuk debugging
   } catch (error) {
-    console.error(`Failed to send email OTP (${type}) to ${toEmail}:`, error);
-    const err = new Error(
-      `Network or API error sending email: ${error.message}`
-    );
+    console.error(`Gagal mengirim email ${typeForLog} ke ${toEmail}:`, error);
+    const err = new Error(`Kesalahan jaringan atau API saat mengirim email: ${error.message}`);
     err.statusCode = error.statusCode || 500;
     throw err;
   }
 }
 
+/**
+ * Mengirim email verifikasi akun dengan OTP dan link konfirmasi.
+ * @param {string} toEmail - Alamat email penerima.
+ * @param {string} otpCode - Kode OTP untuk verifikasi.
+ * @param {string} verificationUrl - URL untuk konfirmasi verifikasi (akan diklik user).
+ */
+async function sendVerificationEmail(toEmail, otpCode, verificationUrl) {
+  const templateId = process.env.EMAIL_VERIFICATION_TEMPLATE_ID;
+  const productName = process.env.APP_NAME || "Examwoi App";
+  const otpValidityHours = process.env.OTP_VALIDITY_HOURS || 24;
+
+  if (!templateId) {
+    const error = new Error("EMAIL_VERIFICATION_TEMPLATE_ID tidak dikonfigurasi.");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const templateData = {
+    product_name: productName,
+    confirm_url: verificationUrl, // Sesuai dengan "confirm_url" di cURL
+    otp: otpCode, // Sesuai dengan "otp" di cURL
+    otp_validity_hours: otpValidityHours,
+  };
+
+  await _sendEmailApi(toEmail, templateId, templateData, 'VERIFICATION');
+}
+
+/**
+ * Mengirim email reset password dengan OTP dan link reset.
+ * @param {string} toEmail - Alamat email penerima.
+ * @param {string} otpCode - Kode OTP untuk reset password.
+ * @param {string} resetUrl - URL untuk halaman reset password (akan diklik user).
+ */
+async function sendResetPasswordEmail(toEmail, otpCode, resetUrl) {
+  const templateId = process.env.EMAIL_RESET_TEMPLATE_ID;
+  const productName = process.env.APP_NAME || "Examwoi App";
+  const otpValidityHours = process.env.OTP_VALIDITY_HOURS || 24;
+
+  if (!templateId) {
+    const error = new Error("EMAIL_RESET_TEMPLATE_ID tidak dikonfigurasi.");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const templateData = {
+    product_name: productName,
+    reset_url: resetUrl, // Sesuai dengan "reset_url" di cURL
+    otp_code: otpCode, // Tambahkan ini jika template reset juga menampilkan OTP
+    otp_validity_hours: otpValidityHours,
+  };
+
+  await _sendEmailApi(toEmail, templateId, templateData, 'RESET_PASSWORD');
+}
+
+/**
+ * Mengirim email OTP generik.
+ * @param {string} toEmail - Alamat email penerima.
+ * @param {string} otpCode - Kode OTP.
+ */
+async function sendGenericOtpEmail(toEmail, otpCode) {
+  const templateId = process.env.EMAIL_GENERIC_OTP_TEMPLATE_ID || process.env.EMAIL_VERIFICATION_TEMPLATE_ID;
+  const productName = process.env.APP_NAME || "Examwoi App";
+  const otpValidityHours = process.env.OTP_VALIDITY_HOURS || 24;
+
+  if (!templateId) {
+    const error = new Error("EMAIL_GENERIC_OTP_TEMPLATE_ID tidak dikonfigurasi.");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const templateData = {
+    product_name: productName,
+    otp_code: otpCode,
+    otp_validity_hours: otpValidityHours
+  };
+
+  await _sendEmailApi(toEmail, templateId, templateData, 'GENERIC_OTP');
+}
+
 module.exports = {
-  sendOtpEmail,
+  sendVerificationEmail,
+  sendResetPasswordEmail,
+  sendGenericOtpEmail,
 };

@@ -1,67 +1,92 @@
 // src/routes/auth/auth.controller.js
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const authService = require("./auth.service");
-const { body, validationResult } = require("express-validator");
-const { authenticate, authorize } = require("../../middleware/auth.middleware");
+const authService = require('./auth.service'); // Untuk login, register, verify, forgot, reset, refresh
+const userService = require('../users/user.service'); // Untuk update user (baik oleh admin maupun user sendiri)
+const { body, param, validationResult } = require('express-validator');
+const { authenticate, authorize } = require('../../middleware/auth.middleware');
+const { Role } = require('@prisma/client');
 
-const asyncHandler = (fn) => (req, res, next) =>
+const asyncHandler = fn => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
-// Custom validator untuk Base64 Image (bisa di-extract ke utilitas terpisah jika banyak dipakai)
+// Custom validator untuk Base64 Image
 const isBase64Image = (value) => {
   if (!value) return true;
-  // Pastikan ini adalah literal regex, bukan string dengan backtick atau quotes
-  const base64Regex =
-    /^data:image\/(jpeg|png|gif|webp|svg\+xml);base64,([A-Za-z0-9+/=])+$/;
+  const base64Regex = /^data:image\/(jpeg|png|gif|webp|svg\+xml);base64,([A-Za-z0-9+/=])+$/;
   if (!base64Regex.test(value)) {
-    throw new Error(
-      "Image URL must be a valid Base64 image data URI (e.g., data:image/png;base64,...)."
-    );
+    throw new Error("Image URL must be a valid Base64 image data URI (e.g., data:image/png;base64,...).");
   }
   return true;
 };
+
 // --- API Endpoints ---
 
-// POST /auth/register
 router.get('/me', authenticate, asyncHandler(async (req, res) => {
   // req.user akan berisi payload JWT (id, email, role) setelah middleware authenticate berjalan
   const userId = req.user.id; // Mengambil ID user dari token
 
-  const userProfile = await authService.getLoggedInUser(userId);
+  // Gunakan userService untuk mendapatkan detail user (bukan authService.getLoggedInUser)
+  const userProfile = await userService.getUserById(userId);
 
-  res.status(200).json({ message: 'User profile retrieved successfully!', data: userProfile });
+  res.status(200).json({ message: 'Profil pengguna berhasil diambil!', data: userProfile });
 }));
 
-// GET /auth/profile (contoh rute yang dilindungi) - ini sebenarnya redundant dengan /me sekarang
-// Kita bisa menghapus ini atau membiarkannya jika ada tujuan berbeda.
-// Untuk saat ini, /me lebih umum digunakan dan bisa menggantikan /profile.
-// Jika ingin menghapus: hapus seluruh block router.get('/profile', ...)
-router.get('/profile', authenticate, asyncHandler(async (req, res) => {
-  // req.user berisi payload JWT (id, email, role) yang ditambahkan oleh middleware authenticate
-  const userId = req.user.id;
-  const prisma = req.app.get('prisma'); // Akses prisma client dari app object
-  const user = await prisma.user.findUnique({
-    where: { id: userId }, // Hapus customerId dari where jika tidak menggunakan multi-tenancy
-    select: {
-      id: true, email: true, username: true, role: true, phone: true,
-      isVerified: true, profileImageUrl: true, dateOfBirth: true,
-      kabupaten: true, profinsi: true
-    }
-  });
-  if (!user) {
-    const error = new Error('User profile not found.');
-    error.statusCode = 404;
-    throw error;
+// PUT /auth/me - Memperbarui data profil user yang sedang login
+router.put('/me', authenticate, [
+  body('name').optional().isString().notEmpty().withMessage('Nama tidak boleh kosong.'),
+  body('username').optional().isString().notEmpty().withMessage('Nama pengguna tidak boleh kosong.'),
+  body('email').optional().isEmail().withMessage('Format email tidak valid.'),
+  body('phone').optional().isMobilePhone('id-ID').withMessage('Format nomor telepon tidak valid.'),
+  body('password').optional().isLength({ min: 6 }).withMessage('Password minimal 6 karakter.'),
+  body('dateOfBirth').optional().isISO8601().toDate().withMessage('Format tanggal lahir tidak valid (YYYY-MM-DD).'),
+  body('kabupaten').optional().isString(),
+  body('profinsi').optional().isString(),
+  body('profileImageUrl').optional().custom(isBase64Image).withMessage('URL Gambar Profil tidak valid.'),
+  // Penting: Pastikan user biasa TIDAK BISA mengubah role atau isVerified
+  body('role').not().exists().withMessage('Peran (role) tidak dapat diubah melalui endpoint ini.'),
+  body('isVerified').not().exists().withMessage('Status verifikasi tidak dapat diubah melalui endpoint ini.'),
+], asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-  res.status(200).json({ message: 'User profile retrieved successfully!', user });
+
+  // Ambil data yang diizinkan untuk diupdate oleh user biasa
+  const allowedUpdates = [
+    'name', 'username', 'email', 'phone', 'password', 'dateOfBirth',
+    'kabupaten', 'profinsi', 'profileImageUrl'
+  ];
+  const updateData = {};
+  for (const key of allowedUpdates) {
+    if (req.body[key] !== undefined) { // Hanya ambil field yang benar-benar ada di body
+      updateData[key] = req.body[key];
+    }
+  }
+
+  // Pastikan setidaknya ada satu field yang diupdate
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ message: "Setidaknya satu field harus disediakan untuk pembaruan profil." });
+  }
+
+  // Panggil userService.updateUser dengan ID dari token user yang terautentikasi
+  const updatedUser = await userService.updateUser(req.user.id, updateData);
+  res.status(200).json({ message: 'Profil berhasil diperbarui!', data: updatedUser });
 }));
 
+// POST /auth/register
 router.post(
   "/register",
   [
-    // ... (validasi lainnya) ...
-    body("profileImageUrl").optional().custom(isBase64Image), // Tambahkan validasi Base64
+    body("name").isString().notEmpty().withMessage("Nama pengguna tidak boleh kosong."),
+    body('email').isEmail().withMessage('Valid email is required.'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long.'),
+    body('username').notEmpty().withMessage('Username is required.'),
+    body('phone').optional().isMobilePhone('id-ID').withMessage('Valid Indonesian phone number format is required (optional field).'),
+    body('dateOfBirth').optional().isISO8601().toDate().withMessage('Invalid date of birth format (YYYY-MM-DD).'),
+    body('kabupaten').optional().isString(),
+    body('profinsi').optional().isString(),
+    body("profileImageUrl").optional().custom(isBase64Image).withMessage('URL Gambar Profil tidak valid.'),
   ],
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -74,39 +99,6 @@ router.post(
         "User registered successfully. Please verify your account with OTP sent to your email.",
       user,
     });
-  })
-);
-
-// GET /auth/profile (Tambahkan juga `profileImageUrl` di `select` jika belum ada)
-router.get(
-  "/profile",
-  authenticate,
-  asyncHandler(async (req, res) => {
-    const userId = req.user.id;
-    const prisma = req.app.get("prisma");
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        phone: true,
-        isVerified: true,
-        profileImageUrl: true,
-        dateOfBirth: true, // <-- Pastikan ini ada
-        kabupaten: true,
-        profinsi: true,
-      },
-    });
-    if (!user) {
-      const error = new Error("User profile not found.");
-      error.statusCode = 404;
-      throw error;
-    }
-    res
-      .status(200)
-      .json({ message: "User profile retrieved successfully!", user });
   })
 );
 
@@ -124,8 +116,8 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    await authService.verifyOtp(req.body.email, req.body.otp);
-    res.status(200).json({ message: "Account verified successfully!" });
+    const user = await authService.verifyOtp(req.body.email, req.body.otp); // verifyOtp sekarang mengembalikan user
+    res.status(200).json({ message: "Account verified successfully!", data: user }); // Kirim user data
   })
 );
 
@@ -161,10 +153,9 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     await authService.forgotPassword(req.body.email);
-    // Generic success message to prevent user enumeration
     res.status(200).json({
       message:
-        "If the email is registered, an OTP has been sent to your email.",
+        "If the email is registered, a password reset link has been sent to your email.",
     });
   })
 );
@@ -193,7 +184,7 @@ router.post(
     );
     res.status(200).json({
       message:
-        "Password reset successfully. Please log in with your new password.",
+        "Password reset successfully. You can now log in with your new password.",
     });
   })
 );
@@ -216,38 +207,9 @@ router.post(
   })
 );
 
-// GET /auth/profile (Contoh rute yang dilindungi)
-router.get(
-  "/profile",
-  authenticate,
-  asyncHandler(async (req, res) => {
-    // req.user berisi payload JWT (id, email, role)
-    const userId = req.user.id;
-    const user = await req.app.get("prisma").user.findUnique({
-      // Access prisma from app object
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        phone: true,
-        isVerified: true,
-        profileImageUrl: true,
-        dateOfBirth: true,
-        kabupaten: true,
-        profinsi: true,
-      },
-    });
-    if (!user) {
-      const error = new Error("User profile not found.");
-      error.statusCode = 404; // Not Found
-      throw error;
-    }
-    res
-      .status(200)
-      .json({ message: "User profile retrieved successfully!", user });
-  })
-);
+// Contoh rute yang hanya bisa diakses admin (tetap di sini)
+router.get('/admin-dashboard', authenticate, authorize(['ADMIN']), async (req, res) => {
+  res.status(200).json({ message: `Welcome, ${req.user.email}! This is the admin dashboard.` });
+});
 
 module.exports = router;

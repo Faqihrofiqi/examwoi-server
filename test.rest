@@ -1,6 +1,6 @@
 ### GLOBAL VARIABLES
 
-@baseUrl = http://localhost:3000/v1
+@baseUrl = http://localhost:5000/v1
 @adminEmail = admin@examwoi.com
 @adminPassword = admin123
 @teacherEmail = teacher@examwoi.com
@@ -8,26 +8,32 @@
 @studentEmail = student@examwoi.com
 @studentPassword = student123
 
-@API_KEY = basksokontolbaksokontolbaksokontol
+@API_KEY = awdjioaiwdjoaiwjdiawjdiwadjincaisni
+
+
 
 @adminAccessToken = 
 @adminRefreshToken = 
 @teacherAccessToken = 
-@studentAccessToken = 
+@studentAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFjMzNmOGM2LTBlNDYtNGMwYS04ZGNkLTJjY2E5MzllMTY5ZCIsImVtYWlsIjoic3R1ZGVudEBleGFtd29pLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzUxOTQ1Mjg1LCJleHAiOjE3NTE5NDg4ODV9.DvOX3aNmbrQJWiaixmkEHa2UoYU2R1Dx9wvDmKWgHUI
 
-@fkipFacultyId = 
-@fteknikFacultyId = 
-@fkedokteranFacultyId = 
-@fkomputerFacultyId = 
 
-@fkipPackageId = 
-@fteknikPackageId = 
-@fkedokteranPackageId = 
-@fkomputerPackageId = 
 
 @sampleQuestionId = 
 
 ### AUTHENTICATION MODULE
+###
+GET {{baseUrl}}/export/952f5652-0be5-4103-a24a-740e1b9d182e
+Content-Type: application/json
+X-API-Key: {{API_KEY}}
+Authorization: Bearer {{studentAccessToken}}
+
+
+###
+GET {{baseUrl}}/exam-progress/export/952f5652-0be5-4103-a24a-740e1b9d182e
+Content-Type: application/json
+X-API-Key: {{API_KEY}}
+Authorization: Bearer {{studentAccessToken}}
 
 ### 1. Register User (POST /v1/auth/register)
 POST {{baseUrl}}/auth/register
@@ -35,6 +41,7 @@ Content-Type: application/json
 X-API-Key: {{API_KEY}}
 
 {
+  "name": "New Registered User",
   "email": "newuser@example.com",
   "password": "newpassword123",
   "username": "New Registered User",
@@ -55,8 +62,8 @@ X-API-Key: {{API_KEY}}
 }
 
 ### 3. Login User (POST /v1/auth/login)
-@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhjZjQ3ZDdjLThmMzYtNGViZS04MDU4LThlYmUwMzFiZGY0OSIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAyNTc5MzMsImV4cCI6MTc1MDI2MTUzM30.jXPBi2_CZo_n4I1zw2TCXbphQ83Qvqrx5eSXsPGnODw
-@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhjZjQ3ZDdjLThmMzYtNGViZS04MDU4LThlYmUwMzFiZGY0OSIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTAyNTc4NDksImV4cCI6MTc1Mjg0OTg0OX0.ayZt62G7f2VaBdvkg5ejFSyP4u6H8ShY-hMqxnmwK3c
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc1MDYzOTNkLTdmNjAtNDNhYy1iM2MyLWYwMjgyMTAyOWE4MyIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTE5NDg0NjcsImV4cCI6MTc1MTk1MjA2N30.BS47w2IneySbt7QGD-OAnsRBjGIBtX0vubzXovxFTbc
+@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc1MDYzOTNkLTdmNjAtNDNhYy1iM2MyLWYwMjgyMTAyOWE4MyIsImVtYWlsIjoiYWRtaW5AZXhhbXdvaS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTE5NDgwMTIsImV4cCI6MTc1NDU0MDAxMn0.WhUQP9hGcIwjiScWACewmGNpp-WMfN_6IaGgludTjik
 @userRole =ADMIN
 
 POST {{baseUrl}}/auth/login
@@ -136,13 +143,17 @@ X-API-Key: {{API_KEY}}
 
 ### Save Faculty ID
 # @set facultyId = {{res.body.data.id}}
+@fkipFacultyId = 68f4582d-dda3-4f0f-8167-3f0fdb9bd05a
+@fteknikFacultyId = 518819b6-cb64-46db-a4f8-c48ef56ab566
+@fkedokteranFacultyId = 8bffa647-aace-4a82-a7fe-e86a493ce6d6
+@fkomputerFacultyId = 8bffa647-aace-4a82-a7fe-e86a493ce6d6
 
 ### 3. Get Faculty by ID (GET /v1/faculties/:id) - Public (no auth)
-GET {{baseUrl}}/faculties/{{{{fkedokteranPackageId}}}}
+GET {{baseUrl}}/faculties/{{fkedokteranFacultyId}}
 X-API-Key: {{API_KEY}}
 
 ### 4. Update Faculty (PUT /v1/faculties/:id) - Requires ADMIN Role
-PUT {{baseUrl}}/faculties/{{{{fkedokteranFacultyId}}}}
+PUT {{baseUrl}}/faculties/{{fkedokteranFacultyId}}
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
@@ -152,7 +163,7 @@ X-API-Key: {{API_KEY}}
 }
 
 ### 5. Delete Faculty (DELETE /v1/faculties/:id) - Requires ADMIN Role
-DELETE {{baseUrl}}/faculties/{{{{fkedokteranFacultyId}}}}
+DELETE {{baseUrl}}/faculties/{{fkedokteranFacultyId}}
 Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
@@ -160,10 +171,15 @@ X-API-Key: {{API_KEY}}
 ---
 ### EXAM PACKAGE MANAGEMENT MODULE
 
+@fkipPackageId = af27cd10-9cd0-4440-ad96-0389db470b9d
+@fteknikPackageId = af27cd10-9cd0-4440-ad96-0389db470b9d
+@fkedokteranPackageId = af27cd10-9cd0-4440-ad96-0389db470b9d
+@fkomputerPackageId = af27cd10-9cd0-4440-ad96-0389db470b9d
+
 ### 1. Create Exam Package (POST /v1/exam-packages) - ADMIN/TEACHER Only (DRAFT by default)
 POST {{baseUrl}}/exam-packages
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -179,17 +195,17 @@ X-API-Key: {{API_KEY}}
 
 
 ### 2. Get All Exam Packages (GET /v1/exam-packages) - Filter by facultyId or status (Public)
-GET {{baseUrl}}/exam-packages?facultyId={{fkomputerFacultyId}}&status=DRAFT
+GET {{baseUrl}}/exam-packages?facultyId={{fkedokteranFacultyId}}&status=DRAFT
 X-API-Key: {{API_KEY}}
 
 ### 3. Get Exam Package by ID (GET /v1/exam-packages/:id) - Public
-GET {{baseUrl}}/exam-packages/{{fkomputerPackageId}}
+GET {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/
 X-API-Key: {{API_KEY}}
 
 ### 4. Update Exam Package (PUT /v1/exam-packages/:id) - ADMIN/TEACHER Only
 PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -200,7 +216,7 @@ X-API-Key: {{API_KEY}}
 # Note: Paket harus punya soal dulu sebelum bisa di-publish. Tambahkan soal di bagian Questions dulu.
 PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/status
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -211,7 +227,7 @@ X-API-Key: {{API_KEY}}
 # Note: Paket harus sudah PUBLISHED
 PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/status
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -222,7 +238,7 @@ X-API-Key: {{API_KEY}}
 # Note: Paket harus sudah ARCHIVED
 PUT {{baseUrl}}/exam-packages/{{fkomputerPackageId}}/status
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -232,7 +248,7 @@ X-API-Key: {{API_KEY}}
 ### 8. Delete Exam Package (DELETE /v1/exam-packages/:id) - ADMIN/TEACHER Only
 # Note: Ini akan menghapus semua soal dan progres ujian yang terkait dengan paket ini
 DELETE {{baseUrl}}/exam-packages/{{fkomputerPackageId}}
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 
@@ -243,7 +259,7 @@ X-API-Key: {{API_KEY}}
 # Assign to the Exam Package created above
 POST {{baseUrl}}/questions
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -259,12 +275,12 @@ X-API-Key: {{API_KEY}}
 # Assign to the Exam Package created above
 POST {{baseUrl}}/questions
 Content-Type: application/json
-Authorization: Bearer {{teacherAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
   "examPackageId": "{{fkomputerPackageId}}",
-  "rawText": "# Bahasa pemrograman apa yang paling sering digunakan untuk pengembangan web sisi klien (frontend)?\n-- Python\n-- Java\n-- JavaScript\n-- C++\n@c\n\n# Apa nama komponen hardware yang berfungsi sebagai \"otak\" komputer?\n-- RAM\n-- Hard Drive\n-- Motherboard\n-- Processor\n@d",
+  "rawText": "#Bahasa pemrograman apa yang paling sering digunakan untuk pengembangan web sisi klien (frontend)?\n-- Python\n-- Java\n-- JavaScript\n-- C++\n@c\n\n#Apa nama komponen hardware yang berfungsi sebagai \"otak\" komputer?\n-- RAM\n-- Hard Drive\n-- Motherboard\n-- Processor\n@d",
   "isBatch": true
 }
 
@@ -279,7 +295,7 @@ X-API-Key: {{API_KEY}}
 ### 5. Update Question (PUT /v1/questions/:id) - ADMIN/TEACHER Only
 PUT {{baseUrl}}/questions/{{sampleQuestionId}}
 Content-Type: application/json
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 {
@@ -288,7 +304,7 @@ X-API-Key: {{API_KEY}}
 
 ### 6. Delete Question (DELETE /v1/questions/:id) - ADMIN/TEACHER Only
 DELETE {{baseUrl}}/questions/{{sampleQuestionId}}
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 
@@ -304,9 +320,9 @@ X-API-Key: {{API_KEY}}
 
 {
   "examPackageId": "{{fkomputerPackageId}}", // ID dari paket yang sudah di-publish
-  "currentQuestionId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13", // Contoh ID soal dari seeder (pastikan ini ada di paket tsb)
+  "currentQuestionId": "fa2f3c19-f169-467d-b91b-4af3fd55634a", // Contoh ID soal dari seeder (pastikan ini ada di paket tsb)
   "completedQuestions": {
-    "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13": { "answer": "a", "isCorrect": true, "timeTaken": 30 }
+    "fa2f3c19-f169-467d-b91b-4af3fd55634a": { "answer": "a", "isCorrect": true, "timeTaken": 30 }
   },
   "score": 100,
   "status": "COMPLETED"
@@ -314,12 +330,12 @@ X-API-Key: {{API_KEY}}
 
 ### 2. Get Student's Exam Progress for Package (GET /v1/exam-progress/:examPackageId) - STUDENT Only
 GET {{baseUrl}}/exam-progress/{{fkomputerPackageId}}
-Authorization: Bearer {{studentAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 ### 3. Get All Exam Progress (GET /v1/exam-progress) - ADMIN Only
 GET {{baseUrl}}/exam-progress
-Authorization: Bearer {{adminAccessToken}}
+Authorization: Bearer {{accessToken}}
 X-API-Key: {{API_KEY}}
 
 ### 4. Download Exam Package Data (Export for Offline Sync) (GET /v1/exam-progress/export/:examPackageId) - Public

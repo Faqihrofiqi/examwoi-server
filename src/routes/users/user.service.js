@@ -102,25 +102,25 @@ async function deleteUser(userId) {
 // Tambahkan fungsi update user jika diperlukan nanti
 //
 async function updateUser(userId, updateData) {
-  try {
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-    });
-    return updatedUser;
-  } catch (error) {
-    if (error.code === 'P2025') {
-      const err = new Error('User not found for update.');
-      err.statusCode = 404;
-      throw err;
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+        });
+        return updatedUser;
+    } catch (error) {
+        if (error.code === 'P2025') {
+            const err = new Error('User not found for update.');
+            err.statusCode = 404;
+            throw err;
+        }
+        throw error;
     }
-    throw error;
-  }
 }
 
 module.exports = {
     getAllUsers,
     getUserById,
     deleteUser,
-     updateUser,
+    updateUser,
 };
