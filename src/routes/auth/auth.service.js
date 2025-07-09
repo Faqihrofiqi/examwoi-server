@@ -39,6 +39,7 @@ async function registerUser(userData) {
     kabupaten,
     profinsi,
     referralCode,
+    profileImageUrl, // <-- 1. TAMBAHKAN DI SINI
   } = userData;
 
   const existingEmailUser = await prisma.user.findUnique({ where: { email } });
@@ -74,6 +75,7 @@ async function registerUser(userData) {
       kabupaten,
       profinsi,
       referralCode,
+      profileImageUrl, // <-- 2. TAMBAHKAN DI SINI
       otp,
       otpExpiry,
       isVerified: false,
@@ -89,6 +91,7 @@ async function registerUser(userData) {
     },
   });
 
+  // ... (sisa fungsi untuk mengirim email tetap sama)
   const verificationTemplateId = process.env.EMAIL_VERIFICATION_TEMPLATE_ID;
   if (!verificationTemplateId) {
     await prisma.user.delete({ where: { id: user.id } });
@@ -96,7 +99,9 @@ async function registerUser(userData) {
     error.statusCode = 500;
     throw error;
   }
-  const verificationUrl = `${process.env.APP_URL}/verify?email=${encodeURIComponent(user.email)}&otp=${otp}`;
+  const verificationUrl = `${process.env.APP_URL}/verify?email=${encodeURIComponent(
+    user.email
+  )}&otp=${otp}`;
 
   try {
     await sendVerificationEmail(user.email, otp, verificationUrl);
