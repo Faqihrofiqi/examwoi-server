@@ -1,6 +1,7 @@
 // src/routes/users/user.service.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const bcrypt = require('bcryptjs');
 
 /**
  * Retrieves all users with optional search filter.
@@ -103,6 +104,11 @@ async function deleteUser(userId) {
 //
 async function updateUser(userId, updateData) {
     try {
+        if(updateData.password){
+            // Hash the password if it's being updated
+            const hashedPassword = await bcrypt.hash(updateData.password, 10);
+            updateData.password = hashedPassword;
+        }
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: updateData,
