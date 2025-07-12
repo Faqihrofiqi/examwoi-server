@@ -1,4 +1,3 @@
-// src/app.js
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
@@ -11,87 +10,77 @@ const apiKeyMiddleware = require("./middleware/apiKey.middleware");
 const prisma = new PrismaClient();
 app.set("prisma", prisma);
 
-app.use(morgan('combined',));
+// Middleware untuk logging (disarankan untuk diletakkan di atas)
+app.use(morgan('combined'));
 
-// --- Konfigurasi CORS (Penting: Posisi di sini) ---
-const APP_URL = process.env.APP_URL;
-const APP_URL1 = process.env.APP_URL1;
-
-console.log(`CORS Config: APP_URL=${APP_URL}, APP_URL1=${APP_URL1}`);
-
+// --- Konfigurasi CORS yang Sudah Diperbaiki ---
 const allowedOrigins = [
-  'http://localhost:63847/',
+  // Tambahkan semua origin yang Anda izinkan di sini.
+  // Regex bisa digunakan untuk port dinamis Flutter web, misal: /^http:\/\/localhost:\d+$/
   'https://examwoi-server-frontend.vercel.app',
-  'http://147.139.243.222:3000',
   'https://examwoi.vercel.app',
-  'http://localhost:3001', // Frontend React di development
-  'http://localhost:3000', // Jika ada bagian frontend yang dilayani di port yang sama
-  // Tambahkan domain lain yang Anda izinkan secara spesifik di sini
+  'http://147.139.243.222:3000',
+  'http://localhost:3001',
+  'http://localhost:3000',
 ];
 
 const corsOptions = {
-  origins: allowedOrigins,
-  // origin: (origin, callback) => {
-  //   // Izinkan requests tanpa origin (misal: mobile apps, file://)
-  //   if (!origin) return callback(null, true);
+  // Opsi 'origin' menggunakan fungsi untuk validasi yang lebih kuat
+  origin: (origin, callback) => {
+    // Izinkan requests tanpa 'origin' (seperti dari aplikasi mobile atau Postman)
+    if (!origin) return callback(null, true);
 
-  //   // Periksa apakah origin ada di daftar allowedOrigins
-  //   const isAllowed = allowedOrigins.some(allowedOrigin => {
-  //     if (typeof allowedOrigin === 'string') {
-  //       return allowedOrigin === origin;
-  //     }
-  //     // Jika allowedOrigin adalah regex, test origin
-  //     return allowedOrigin.test(origin);
-  //   });
-
-  //   if (isAllowed) {
-  //     callback(null, true);
-  //   } else {
-  //     console.warn(`CORS: Origin ${origin} diblokir oleh kebijakan CORS.`);
-  //     callback(new Error('Tidak diizinkan oleh CORS'));
-  //   }
-  // },
+    // Periksa apakah origin yang masuk ada di dalam daftar yang diizinkan
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // Jika tidak, tolak permintaan dengan error CORS
+      console.warn(`CORS: Origin ${origin} diblokir oleh kebijakan.`);
+      callback(new Error('Origin ini tidak diizinkan oleh kebijakan CORS.'));
+    }
+  },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  // Header yang diizinkan untuk dibawa oleh klien
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 204, // Penting untuk preflight requests
+  optionsSuccessStatus: 204, // Untuk pre-flight requests
 };
+
+// Terapkan middleware CORS dengan konfigurasi di atas
 app.use(cors(corsOptions));
 
+// Middleware lain setelah CORS
 app.use(apiKeyMiddleware);
-
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
-// Melayani file statis dari folder public
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Import router utama
+// --- Router Utama ---
 const apiRouter = require("./routes");
-app.use(`/${process.env.API_VERSION}`, apiRouter);
+app.use(`/${process.env.API_VERSION}`, apiRouter); // Menggunakan /v1 sebagai versi API
 
-// Basic health check route
+// Health check route
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "ok",
-    message: "Hybrid LMS Backend API is running!",
+    message: "Examwoi Backend API is running!",
   });
 });
 
-// Global Error Handler
+// --- Global Error Handler ---
+// Ini akan menangkap semua error yang dilempar dari rute Anda
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-
+  console.error(err.stack); // Log error stack untuk debugging
   res.status(err.statusCode || 500).json({
     message: err.message || "An unexpected error occurred.",
     error: err.name || "InternalServerError",
   });
 });
 
-// Hook untuk menutup koneksi Prisma
+// Hook untuk memastikan koneksi Prisma ditutup dengan baik saat aplikasi berhenti
 process.on("beforeExit", async () => {
   await prisma.$disconnect();
   console.log("Prisma client disconnected.");
 });
 
 module.exports = app;
-// Jika ingin menjalankan server secara langsung
