@@ -41,7 +41,7 @@ const corsOptions = {
   },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   // Header yang diizinkan untuk dibawa oleh klien
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization','x-api-key'],
   credentials: true,
   optionsSuccessStatus: 204, // Untuk pre-flight requests
 };
