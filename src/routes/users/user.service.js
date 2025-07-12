@@ -46,6 +46,7 @@ async function getUserById(userId) {
         where: { id: userId },
         select: {
             id: true,
+            name: true,
             username: true,
             email: true,
             phone: true,
@@ -103,25 +104,77 @@ async function deleteUser(userId) {
 // Tambahkan fungsi update user jika diperlukan nanti
 //
 async function updateUser(userId, updateData) {
-    try {
-        if(updateData.password){
-            // Hash the password if it's being updated
-            const hashedPassword = await bcrypt.hash(updateData.password, 10);
-            updateData.password = hashedPassword;
-        }
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: updateData,
-        });
-        return updatedUser;
-    } catch (error) {
-        if (error.code === 'P2025') {
-            const err = new Error('User not found for update.');
-            err.statusCode = 404;
-            throw err;
-        }
-        throw error;
+  const { email, username, password, currentPassword, ...otherData } = updateData;
+
+  try {
+    // === 1. VALIDASI KEUNIKAN (EMAIL & USERNAME) ===
+    if (email) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser && existingUser.id !== userId) {
+        const err = new Error("Email is already taken.");
+        err.statusCode = 409; // Conflict
+        throw err;
+      }
     }
+    // (Anda bisa menambahkan logika serupa untuk 'username' jika unik)
+
+    // === 2. VALIDASI & HASHING PASSWORD ===
+    if (password) {
+      // Wajibkan ada 'currentPassword' jika ingin ganti password baru
+      if (!currentPassword) {
+        const err = new Error("Current password is required to set a new one.");
+        err.statusCode = 400; // Bad Request
+        throw err;
+      }
+
+      // Ambil data user dari DB untuk membandingkan password lama
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        const err = new Error('User not found.');
+        err.statusCode = 404;
+        throw err;
+      }
+      
+      // Bandingkan password lama yang diberikan dengan hash di DB
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        const err = new Error("Incorrect current password.");
+        err.statusCode = 401; // Unauthorized
+        throw err;
+      }
+
+      // Jika cocok, baru hash password yang baru
+      otherData.password = await bcrypt.hash(password, 10);
+    }
+    
+    // Siapkan data final untuk di-update
+    const dataToUpdate = {
+      ...otherData,
+      email,
+      username,
+    };
+
+    // === 3. EKSEKUSI UPDATE & KEMBALIKAN DATA AMAN ===
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: dataToUpdate,
+    });
+    
+    // Hapus field password dari response sebelum dikirim ke klien
+    delete updatedUser.password;
+
+    return updatedUser;
+    
+  } catch (error) {
+    // Tangani error jika user tidak ditemukan saat update (fallback)
+    if (error.code === 'P2025') {
+      const err = new Error('User not found for update.');
+      err.statusCode = 404;
+      throw err;
+    }
+    // Lemparkan kembali error lain (termasuk error validasi yang kita buat)
+    throw error;
+  }
 }
 
 module.exports = {

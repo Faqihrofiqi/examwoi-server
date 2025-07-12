@@ -216,6 +216,8 @@ async function loginUser(email, password) {
     refreshToken,
     user: {
       id: user.id,
+      name: user.name,
+      phone: user.phone,
       email: user.email,
       username: user.username,
       role: user.role,
