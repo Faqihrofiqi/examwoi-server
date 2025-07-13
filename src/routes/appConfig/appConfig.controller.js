@@ -22,7 +22,7 @@ const isBase64Image = (value) => {
 // --- API Endpoints for AppConfig (Admin Only) ---
 
 // GET /app-configs - Get all configurations (Admin Only)
-router.get('/', authenticate, asyncHandler(async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
     const configs = await appConfigService.getAllAppConfigs();
     res.status(200).json({ message: 'App configurations retrieved successfully!', data: configs });
 }));
