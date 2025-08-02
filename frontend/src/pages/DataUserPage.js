@@ -108,9 +108,6 @@ const DataUserPage = () => {
           </span>
         </td>
         <td style={tableCellStyle} className="action-cell">
-          <button onClick={() => handleEditUser(user.id)} className="action-button edit-button" title="Edit User">
-            <i className="material-icons">edit</i>
-          </button>
           <button onClick={() => handleDeleteUser(user.id)} className="action-button delete-button" title="Hapus User">
             <i className="material-icons">delete</i>
           </button>
